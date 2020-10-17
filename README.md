@@ -3,7 +3,7 @@
 English README : https://github.com/Mrpotatosse/AivyCore/blob/master/README_EN.md
 
 <p align="center">
-  <img src="https://pbs.twimg.com/media/Ej_ZeleXYAI-EQN?format=jpg&name=medium"/>
+  <img src="https://camo.githubusercontent.com/de3e9648ad06c6d749236ad24df6170fd599071f/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f456a5f5a656c65585941492d45514e3f666f726d61743d6a7067266e616d653d6d656469756d"/>
 </p>
 
 <h2> AivyCore </h2>

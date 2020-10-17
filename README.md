@@ -3,7 +3,7 @@
 English README : https://github.com/Mrpotatosse/AivyCore/blob/master/README_EN.md
 
 <p align="center">
-  <img src="https://pbs.twimg.com/media/Ej-YmeJXcAIG7Dy?format=jpg&name=medium"/>
+  <img src="https://twitter.com/AivyCore/status/1315008747748683778/photo/1"/>
 </p>
 
 <h2> AivyCore </h2>

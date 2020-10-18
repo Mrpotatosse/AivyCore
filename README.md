@@ -16,6 +16,10 @@ Le but n'est pas de vous donnez une base pour qu'ensuite vous réutilisiez sans 
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
 
+Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permettre d'éxécuter du code Lua au runtime ( c'est pour me faciliter les tests pour différents types de
+bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satisfaisant pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications
+par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité )
+
 Un exemple d'implémentation
 
 ```csharp 
@@ -88,19 +92,59 @@ c#
     }
 ```
 
-lua (WIP update très bientôt)
+lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua sera éxéctuer à chaque lancement du program , il contiendra certaine
+fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité. )
 ```lua
 -- variable global : 
 --    - multi_proxy -> DofusMultiProxy
 --    - protocol_dofus2 -> BotofuProtocol
 
+-- int -> ProxyEntity
 function start_proxy(port)
-	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'EMPLACEMENT FICHIER', 'EXE_NAME')
+	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'D:\\AppDofus', 'Dofus')
+end
+-- ProxyData * int -> ProxyEntity
+function start_proxy_from_config(config, port)
+	return multi_proxy:Active(config.Type, true, port, config.FolderPath, config.ExeName)
+end
+-- string -> ProxyData
+function get_config(name)
+	return multi_proxy._proxy_api:GetData(function(data) return data.Name == name end)
 end
 
--- il faudra indiquer le port
-proxy = start_proxy(666) 
-proxy_callback = multi_proxy[proxy.Port]
+-- ProxyEntity * bool * ClientEntity * NetworkElement * NetworkContentElement * uint -> bool
+function send_message(local_proxy, from_client, client, message, message_content, instance_id)
+	if local_proxy == nil then return false
+	elseif client == nil then return false
+	elseif message == nil then return false
+	elseif message_content == nil then return false
+	else
+		local data = MessageDataBufferWriter(message):Parse(message_content)		
+		local final_data_reader = MessageBufferWriter(from_client):Build(message.protocolID, instance_id, data)
+		local final_data = final_data_reader.Data
+		final_data_reader:Dispose()
+		multi_proxy[local_proxy.Port]._client_sender:Handle(client, final_data)
+		return true
+	end
+end
+
+function test_send_chat(proxy, client, channel, content)
+	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
+	local message = protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
+	local message_content = NetworkContentElement()
+	message_content['channel'] = channel
+	message_content['content'] = content
+	
+	if send_message(proxy, true, client, message, message_content, instance_id) then 
+		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
+end
+
+-- set comment if you want to start manualy
+if proxy == nil then
+	config = get_config('updated')
+	proxy = start_proxy_from_config(config, 666)
+	accept_callback = multi_proxy[proxy.Port]
+end
 ```
 
 <h2> AivyDofus - Dofus 2.0 - Handler </h2>
@@ -162,6 +206,27 @@ c#
                 { "protocol_id" , 0 } // sur certain type , il peut être obligatoire ( dans le protocol c'est si prefixed_by_type_id = true ) 
                 // { ... }   
             };
+	    
+	    // pour éxécuter du code Lua (indépendement du code Lua de base lancer lors du lancement)
+	    // j'ai un peu forcer sur les importations mdr
+	    using (CodeSession session = new CodeSession("System",
+                                                         "System.Link",
+                                                         "AivyData",
+                                                         "AivyData.Enums",
+                                                         "AivyDofus",
+                                                         "AivyDofus.Handler",
+                                                         "AivyDofus.IO",
+                                                         "AivyDofus.Protocol",
+                                                         "AivyDofus.Protocol.Buffer",
+                                                         "AivyDofus.Protocol.Elements",
+                                                         "AivyDofus.Proxy",
+                                                         "AivyDomain"))
+             	{
+			// si vous voulez importez les fonctions que j'aurais partager
+                    	session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
+			// pour plus d'info consulter le site NLua dans les dépendances et https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/LuaCode/CodeSession.cs
+			// la fonction Execute et ExecuteFile retourne null si le code s'est bien passé sinon il renvoye l'erreur
+		}
         }
         
         // optionel
@@ -179,7 +244,7 @@ c#
 
 lua (WIP update bientôt)
 ```lua
-WIP
+Pour l'instant les handlers se font uniquement avec du code c# ( mais vous pouvez éxécuter des codes Lua depuis le handler du c# , j'ai mis un exemple un peu plus haut )
 ```
 
 <h2> Dépendances </h2>

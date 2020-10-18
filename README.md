@@ -113,6 +113,8 @@ Server Handlers : https://github.com/Mrpotatosse/AivyCore/tree/master/AivyDofus/
 
 Voici un exemple de Handler commenté : 
 
+c#
+
 ```csharp
     // L'attribut doit être spécifié pour pouvoir handle le message , mettez l'attribut en commentaire si vous voulez désactivez le handle d'un message
     // ProxyHandler pour les proxys et ServerHandler pour les servers
@@ -171,6 +173,11 @@ Voici un exemple de Handler commenté :
             logger.Error(e);
         }
     }
+```
+
+lua (WIP update bientôt)
+```lua
+WIP
 ```
 
 <h2> Dépendances </h2>

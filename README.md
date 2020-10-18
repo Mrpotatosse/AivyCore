@@ -99,19 +99,20 @@ fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messa
 --    - multi_proxy -> DofusMultiProxy
 --    - protocol_dofus2 -> BotofuProtocol
 
+-- int -> ProxyEntity
 function start_proxy(port)
 	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'D:\\AppDofus', 'Dofus')
 end
-
+-- ProxyData * int -> ProxyEntity
 function start_proxy_from_config(config, port)
 	return multi_proxy:Active(config.Type, true, port, config.FolderPath, config.ExeName)
 end
-
+-- string -> ProxyData
 function get_config(name)
 	return multi_proxy._proxy_api:GetData(function(data) return data.Name == name end)
 end
 
--- ProxyEntity * bool * ClientEntity * NetworkElement * NetworkContentElement * uint
+-- ProxyEntity * bool * ClientEntity * NetworkElement * NetworkContentElement * uint -> bool
 function send_message(local_proxy, from_client, client, message, message_content, instance_id)
 	if local_proxy == nil then return false
 	elseif client == nil then return false

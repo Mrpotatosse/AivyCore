@@ -15,6 +15,7 @@ Le but n'est pas de vous donnez une base pour qu'ensuite vous réutilisiez sans 
 <h2> AivyDofus </h2>
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
+Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permettre d'éxécuter du code Lua au runtime ( c'est pour me faciliter les tests pour différents types de bot , les Handlers dans le code étant trop restrictifs. C'est bien pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité )
 
 Un exemple d'implémentation
 
@@ -89,7 +90,7 @@ c#
 ```
 
 lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua sera éxéctuer à chaque lancement du program , il contiendra certaine
-fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité )
+fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité. )
 ```lua
 -- variable global : 
 --    - multi_proxy -> DofusMultiProxy

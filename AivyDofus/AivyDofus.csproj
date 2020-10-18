@@ -132,8 +132,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Resources\AivyDofusLua" />
     <None Include="packages.config" />
+    <None Include="Resources\AivyDofusLua.lua" />
     <None Include="Resources\BreedJson.json" />
     <None Include="Resources\HeadJson.json" />
   </ItemGroup>

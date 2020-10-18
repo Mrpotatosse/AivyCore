@@ -259,4 +259,4 @@ Pour l'instant les handlers se font uniquement avec du code c# ( mais vous pouve
   
 - LiteDB (https://www.litedb.org/) ( pour la base de données côté serveur , c'est du NoSQL pour faciliter le stockage d'object ) ( vous pouvez le modifier et importer la base de données qui vous plait https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/API/OpenServerDatabaseApi.cs )
 
-- NLua (https://github.com/NLua/NLua) (pour éxécuter des facilement des scripts Lua (alternatives Handler))
+- NLua (https://github.com/NLua/NLua) (pour éxécuter facilement des scripts Lua (alternatives Handler))

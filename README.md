@@ -17,8 +17,8 @@ Le but n'est pas de vous donnez une base pour qu'ensuite vous réutilisiez sans 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
 
 Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permettre d'éxécuter du code Lua au runtime ( c'est pour me faciliter les tests pour différents types de
-bot , les Handlers dans le code étant trop restrictifs. C'est bien pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications par exemple, mais 
-pour des actions assez rapides dans le jeu ça reste tout de même assez limité )
+bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satisfaisant pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications
+par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité )
 
 Un exemple d'implémentation
 

@@ -3,7 +3,7 @@
 English README : https://github.com/Mrpotatosse/AivyCore/blob/master/README_EN.md
 
 <p align="center">
-  <img src="https://pbs.twimg.com/media/Ej-YmeJXcAIG7Dy?format=jpg&name=medium"/>
+  <img src="https://camo.githubusercontent.com/de3e9648ad06c6d749236ad24df6170fd599071f/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f456a5f5a656c65585941492d45514e3f666f726d61743d6a7067266e616d653d6d656469756d"/>
 </p>
 
 <h2> AivyCore </h2>
@@ -52,6 +52,8 @@ Un exemple d'implémentation
     }
 ```
 
+MultiProxy (pour configurer plus facilement des proxys implémentant différent type de handler ) : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/DofusMultiProxy.cs
+
 Proxy : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/DofusProxy.cs
 
 Server : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/DofusServer.cs
@@ -61,6 +63,8 @@ script permettant de se connecter sans mettre ses identifiants sur le client (ma
 il fauudra renseigner votre ndc , mdp et la version du jeu)
 
 Voici un exemple pour lancer un DofusServer ou un DofusProxy/DofusRetroProxy
+
+c#
 
 ```csharp
     // un exemple pour lancer 10 server
@@ -84,6 +88,21 @@ Voici un exemple pour lancer un DofusServer ou un DofusProxy/DofusRetroProxy
     }
 ```
 
+lua (WIP update très bientôt)
+```lua
+-- variable global : 
+--    - multi_proxy -> DofusMultiProxy
+--    - protocol_dofus2 -> BotofuProtocol
+
+function start_proxy(port)
+	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'EMPLACEMENT FICHIER', 'EXE_NAME')
+end
+
+-- il faudra indiquer le port
+proxy = start_proxy(666) 
+proxy_callback = multi_proxy[proxy.Port]
+```
+
 <h2> AivyDofus - Dofus 2.0 - Handler </h2>
 
 LE PROTOCOL SOUS FORME DE JSON SE TROUVE DANS LE DOSSIER DE VOTRE EXECUTABLE sous le nom ./protocol.json (lancez le programme 1 fois pour que le fichier se crée automatiquement)
@@ -95,6 +114,8 @@ Proxy Handlers : https://github.com/Mrpotatosse/AivyCore/tree/master/AivyDofus/P
 Server Handlers : https://github.com/Mrpotatosse/AivyCore/tree/master/AivyDofus/Server/Handlers/Customs
 
 Voici un exemple de Handler commenté : 
+
+c#
 
 ```csharp
     // L'attribut doit être spécifié pour pouvoir handle le message , mettez l'attribut en commentaire si vous voulez désactivez le handle d'un message
@@ -156,6 +177,11 @@ Voici un exemple de Handler commenté :
     }
 ```
 
+lua (WIP update bientôt)
+```lua
+WIP
+```
+
 <h2> Dépendances </h2>
 
 - NLog
@@ -167,3 +193,5 @@ Voici un exemple de Handler commenté :
 - Botofu parser ( https://gitlab.com/botofu/protocol_parser ) ( j'ai directement ajouter le .exe aux ressources ducoup le protocol devrait être parser à chaque ouverture du hook  https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Protocol/Parser/BotofuParser.cs )
   
 - LiteDB (https://www.litedb.org/) ( pour la base de données côté serveur , c'est du NoSQL pour faciliter le stockage d'object ) ( vous pouvez le modifier et importer la base de données qui vous plait https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/API/OpenServerDatabaseApi.cs )
+
+- NLua (https://github.com/NLua/NLua) (pour éxécuter des facilement des scripts Lua (alternatives Handler))

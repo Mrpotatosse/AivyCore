@@ -92,7 +92,7 @@ c#
     }
 ```
 
-lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua sera éxéctuer à chaque lancement du program , il contiendra certaine
+lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua.lua sera éxéctuer à chaque lancement du program , il contiendra certaine
 fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité. )
 ```lua
 -- variable global : 

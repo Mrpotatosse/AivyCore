@@ -1,7 +1,10 @@
 ﻿using AivyData.Entities;
 using AivyData.Enums;
+using AivyDofus.LuaCode;
+using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Parser;
 using AivyDofus.Proxy;
+using AivyDofus.Proxy.API;
 using AivyDofus.Proxy.Callbacks;
 using AivyDofus.Server;
 using AivyDomain.API.Proxy;
@@ -24,14 +27,57 @@ namespace AivyDofus
     public class Program
     {
         static readonly ConsoleTarget log_console = new ConsoleTarget("log_console");
+        static readonly ConsoleTarget log_console_error = new ConsoleTarget("log_console_error");
         static readonly FileTarget log_file = new FileTarget("log_file") { FileName = "./log.txt" };
         static readonly LoggingConfiguration configuration = new LoggingConfiguration();
 
         public static void Main(string[] args)
         {
+            int reader = 0;
             Console.Title = "AivyCore - 1.0.0";
 
-            configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, log_console);
+            if(args[reader] == "-g")
+            {
+                reader++;
+                configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, log_console);
+            }
+
+            if (int.TryParse(args[reader], out int port))
+            {
+                using (CodeSession session = new CodeSession("System",
+                                                             "System.Link",
+                                                             "AivyData",
+                                                             "AivyData.Enums",
+                                                             "AivyDofus",
+                                                             "AivyDofus.Handler",
+                                                             "AivyDofus.IO",
+                                                             "AivyDofus.Protocol",
+                                                             "AivyDofus.Protocol.Buffer",
+                                                             "AivyDofus.Protocol.Elements",
+                                                             "AivyDofus.Proxy",
+                                                             "AivyDomain"))
+                {
+                    session["multi_proxy"] = new DofusMultiProxy();
+                    session["protocol_dofus2"] = BotofuProtocolManager.Protocol;
+
+                    session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
+
+                    while (Console.ReadLine() is string _code && _code != "")
+                    {
+                        if (session.Execute(_code) is Exception error)
+                        {
+                            configuration.AddRule(LogLevel.Error, LogLevel.Fatal, log_console_error);
+                            LogManager.Configuration = configuration;
+
+                            CodeSession.logger.Error(error);
+
+                            configuration.RemoveTarget(log_console_error.Name);
+                            LogManager.Configuration = configuration;
+                        }
+                    }
+                }
+            }
+            /*configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, log_console);
             LogManager.Configuration = configuration;
 
             try
@@ -41,7 +87,7 @@ namespace AivyDofus
                 {
                     if (int.TryParse(args[1], out int proxy_type))
                     {
-                        DofusMultiProxy multi_proxy = new DofusMultiProxy();
+                        DofusMultiProxy<OpenProxyConfigurationApi> multi_proxy = new DofusMultiProxy<OpenProxyConfigurationApi>();
                         if (int.TryParse(args[2], out int proxy_port))
                         {
                             ProxyEntity p_entity = multi_proxy.Active((ProxyCallbackTypeEnum)proxy_type, true, proxy_port, args[3], args[4]);
@@ -68,7 +114,7 @@ namespace AivyDofus
 
                 Console.ReadKey();
                 Environment.Exit(0);
-            }
+            }*/
 
             /*DofusRetroProxy r_proxy = new DofusRetroProxy(@"D:\retro\resources\app\retroclient");
             ProxyEntity retro_entity = r_proxy.Active(true, 668);*/
@@ -82,7 +128,7 @@ namespace AivyDofus
             DofusServer server = new DofusServer(@"D:\AppDofus");
             ServerEntity s_entity = server.Active(true, 777);*/
 
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 }

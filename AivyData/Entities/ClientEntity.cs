@@ -14,6 +14,7 @@ namespace AivyData.Entities
         public int ReceiveBufferLength { get; set; }
 
         public MemoryStream ReceiveBuffer { get; set; }
+        public bool IsGameClient { get; set; }
         public string CurrentToken { get; set; }
 
         public bool IsRunning
@@ -26,9 +27,9 @@ namespace AivyData.Entities
                     {
                         try
                         {
-                            if (Socket.Poll(0, SelectMode.SelectRead))
+                            if (Socket.Poll(1000, SelectMode.SelectRead))
                             {
-                                if (Socket.Receive(new byte[1], SocketFlags.Peek) == 0)
+                                if (Socket.Available == 0)
                                 {
                                     return false;
                                 }

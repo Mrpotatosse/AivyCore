@@ -28,6 +28,12 @@ namespace AivyDofus.Protocol.Elements
             }
         }
 
+        // for lua
+        public NetworkElement Get(ProtocolKeyEnum key, Func<NetworkElement, bool> predicat)
+        {
+            return this[key, predicat];
+        }
+
         public EnumField this[Func<EnumField, bool> predicat]
         {
             get

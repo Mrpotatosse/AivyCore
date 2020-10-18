@@ -21,14 +21,27 @@ namespace AivyDomain.Callback.Proxy
 
         protected readonly OpenClientApi _client_api;
         protected readonly ClientEntityMapper _client_mapper;
-        protected readonly ClientRepository _client_repository;
+
+        public readonly ClientRepository _client_repository;
 
         protected readonly ClientCreatorRequest _client_creator;
         protected readonly ClientConnectorRequest _client_connector;
-        protected readonly ClientDisconnectorRequest _client_disconnector;
+
         protected readonly ClientLinkerRequest _client_linker;
         protected readonly ClientReceiverRequest _client_receiver;
-        protected readonly ClientSenderRequest _client_sender;
+
+        public readonly ClientDisconnectorRequest _client_disconnector;
+        public readonly ClientSenderRequest _client_sender;
+
+        public virtual ClientEntity _main_local_client()
+        {
+            return _client_repository.GetResult(x => x.IsGameClient && x.RemoteIp.Address.ToString() == "127.0.0.1" && x.IsRunning);
+        }
+
+        public virtual ClientEntity _main_remote_client()
+        {
+            return _client_repository.GetResult(x => x.IsGameClient && x.RemoteIp.Address.ToString() != "127.0.0.1" && x.IsRunning);
+        }
 
         public ProxyAcceptCallback(ProxyEntity proxy) 
             : base(proxy)

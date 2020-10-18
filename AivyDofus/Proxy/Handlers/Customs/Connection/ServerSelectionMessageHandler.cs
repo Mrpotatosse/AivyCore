@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy.Handlers.Customs.Connection
 {
-    [ProxyHandler(ProtocolName = "ServerSelectionMessage")]
+    //[ProxyHandler(ProtocolName = "ServerSelectionMessage")]
     public class ServerSelectionMessageHandler : AbstractMessageHandler
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -45,7 +45,7 @@ namespace AivyDofus.Proxy.Handlers.Customs.Connection
         {
             DofusProxyClientReceiveCallback _proxy_callback = _casted_callback<DofusProxyClientReceiveCallback>();
 
-            if (DofusProxy._proxy_api.GetData(null).custom_servers.FirstOrDefault(x => x.ServerId == (int)_content["serverId"]) is ProxyCustomServerData _data)
+            /*if (DofusProxy._proxy_api.GetData(null).custom_servers.FirstOrDefault(x => x.ServerId == (int)_content["serverId"]) is ProxyCustomServerData _data)
             {
                 NetworkElement element = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "SelectedServerDataMessage"];
 
@@ -70,7 +70,7 @@ namespace AivyDofus.Proxy.Handlers.Customs.Connection
             {
                 Send(true, _callback._remote, _element, _content, _callback.InstanceId);
                 _proxy_callback._proxy.AccountData.ConnectedToCustomServer = false;
-            }
+            }*/
         }
 
         public override void Error(Exception e)

@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy.Handlers.Customs.Connection
 {
-    [ProxyHandler(ProtocolName = "ServersListMessage")]
+    //[ProxyHandler(ProtocolName = "ServersListMessage")]
     public class ServersListMessageHandler : AbstractMessageHandler
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -40,7 +40,7 @@ namespace AivyDofus.Proxy.Handlers.Customs.Connection
         {
             IEnumerable<dynamic> _servers = _content["servers"];
 
-            foreach (ProxyCustomServerData custom in DofusProxy._proxy_api.GetData(null).custom_servers)
+            /*foreach (ProxyCustomServerData custom in DofusProxy._proxy_api.GetData(null).custom_servers)
             {
                 int status = 0;
 
@@ -66,7 +66,7 @@ namespace AivyDofus.Proxy.Handlers.Customs.Connection
                     }
                 });
 
-            }
+            }*/
 
             _content["servers"] = _servers.ToArray();
 

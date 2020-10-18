@@ -24,36 +24,33 @@ namespace AivyDofus.Handler
         {
             lock (_lock)
             {
-                lock (_lock)
+                if (_handlers_type is null)
                 {
-                    if (_handlers_type is null)
+                    try
                     {
-                        try
-                        {
-                            List<Type> handlers_type = new List<Type>();
+                        List<Type> handlers_type = new List<Type>();
 
-                            handlers_type = Assembly.GetEntryAssembly()
-                                                     .GetTypes()
-                                                     .Where(x => x.GetCustomAttribute<Attribute>() != null
-                                                              && x.IsSubclassOf(typeof(AbstractMessageHandler))
-                                                              && !x.IsAbstract).ToList();
-                            handlers_type.AddRange(Assembly.GetCallingAssembly()
-                                                     .GetTypes()
-                                                     .Where(x => x.GetCustomAttribute<Attribute>() != null
-                                                              && x.IsSubclassOf(typeof(AbstractMessageHandler))
-                                                              && !x.IsAbstract));
-                            handlers_type.AddRange(Assembly.GetExecutingAssembly()
-                                                     .GetTypes()
-                                                     .Where(x => x.GetCustomAttribute<Attribute>() != null
-                                                              && x.IsSubclassOf(typeof(AbstractMessageHandler))
-                                                              && !x.IsAbstract));
+                        handlers_type = Assembly.GetEntryAssembly()
+                                                 .GetTypes()
+                                                 .Where(x => x.GetCustomAttribute<Attribute>() != null
+                                                          && x.IsSubclassOf(typeof(AbstractMessageHandler))
+                                                          && !x.IsAbstract).ToList();
+                        handlers_type.AddRange(Assembly.GetCallingAssembly()
+                                                 .GetTypes()
+                                                 .Where(x => x.GetCustomAttribute<Attribute>() != null
+                                                          && x.IsSubclassOf(typeof(AbstractMessageHandler))
+                                                          && !x.IsAbstract));
+                        handlers_type.AddRange(Assembly.GetExecutingAssembly()
+                                                 .GetTypes()
+                                                 .Where(x => x.GetCustomAttribute<Attribute>() != null
+                                                          && x.IsSubclassOf(typeof(AbstractMessageHandler))
+                                                          && !x.IsAbstract));
 
-                            _handlers_type = handlers_type.Distinct().Where(x => x != null);
-                        }
-                        catch (ReflectionTypeLoadException error)
-                        {
-                            _handlers_type = error.Types.Where(x => x != null);
-                        }                        
+                        _handlers_type = handlers_type.Distinct().Where(x => x != null);
+                    }
+                    catch (ReflectionTypeLoadException error)
+                    {
+                        _handlers_type = error.Types.Where(x => x != null);
                     }
                 }
             }

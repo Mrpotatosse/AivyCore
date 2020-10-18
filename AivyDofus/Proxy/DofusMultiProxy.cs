@@ -1,9 +1,11 @@
-﻿using AivyData.Entities;
+﻿using AivyData.API;
+using AivyData.Entities;
 using AivyData.Enums;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Parser;
 using AivyDofus.Proxy.API;
 using AivyDofus.Proxy.Callbacks;
+using AivyDomain.API;
 using AivyDomain.Callback.Client;
 using AivyDomain.Callback.Proxy;
 using AivyDomain.Mappers.Proxy;
@@ -14,16 +16,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy
 {
-    public class DofusMultiProxy
+    // for lua
+    public class DofusMultiProxy : DofusMultiProxy<OpenProxyConfigurationApi>
+    {
+        public DofusMultiProxy() : base() { }
+    }
+
+    public class DofusMultiProxy<ProxyApi> where ProxyApi : class, IApi<ProxyData>
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static readonly OpenProxyConfigurationApi _proxy_api = new OpenProxyConfigurationApi("./proxy_information_api.json");
+        public readonly ProxyApi _proxy_api = Activator.CreateInstance(typeof(ProxyApi), new object[] { "./proxy_api_information.json" }) as ProxyApi;
 
         public readonly ProxyRepository _proxy_repository;
 
@@ -32,35 +41,56 @@ namespace AivyDofus.Proxy
         protected readonly ProxyCreatorRequest _proxy_creator;
         protected readonly ProxyActivatorRequest _proxy_activator;
 
+        private readonly Dictionary<int, ProxyAcceptCallback> _proxy_callbacks;
+
+        public ProxyAcceptCallback this[int port]
+        {
+            get
+            {
+                try
+                {
+                    return _proxy_callbacks[port];
+                }
+                catch { return null; }
+            }
+        }
+
         public DofusMultiProxy()
         {
             if(_proxy_repository is null)
             {
+                protocol2_parsed = false;
+
                 _proxy_repository = new ProxyRepository(_proxy_api, _proxy_mapper);
                 _proxy_creator = new ProxyCreatorRequest(_proxy_repository);
                 _proxy_activator = new ProxyActivatorRequest(_proxy_repository);
+
+                _proxy_callbacks = new Dictionary<int, ProxyAcceptCallback>();
             }
         }        
 
-        public ProxyEntity Active<Callback>(bool active, int port, string folder_path) where Callback : ProxyAcceptCallback
+        public ProxyEntity Active<Callback>(bool active, int port, string folder_path, out Callback callback) where Callback : ProxyAcceptCallback
         {
             if (active)
             {
                 ProxyEntity result = _proxy_creator.Handle(folder_path, port);
-                result = _proxy_activator.Handle(result, active, Activator.CreateInstance(typeof(Callback), new object[] { result }) as Callback);
+                callback = Activator.CreateInstance(typeof(Callback), new object[] { result }) as Callback;
+                result = _proxy_activator.Handle(result, active, callback);
                 return result;
             }
             else
             {
+                callback = null;
                 if (_proxy_repository.Remove(x => x.Port == port))
                 {
+                    _proxy_callbacks.Remove(port);
                     return null;
                 }
                 throw new ArgumentNullException($"cannot disable proxy with port : {port}");
             }
         }
 
-        private bool protocol2_parsed { get; set; } = false;
+        private bool protocol2_parsed { get; set; } 
         public ProxyEntity Active(ProxyCallbackTypeEnum type, bool active, int port, string folder_path, string exe_name)
         {
             if (type == ProxyCallbackTypeEnum.Dofus2 && !protocol2_parsed)
@@ -71,11 +101,27 @@ namespace AivyDofus.Proxy
             }
 
             string exe_path = Path.Combine(folder_path, $"{exe_name}.exe");
+            if (!File.Exists(exe_path))
+            {
+                Console.WriteLine($"NOT FOUND : {exe_path}");
+                return null;
+            }
+            ProxyEntity result;
             switch (type)
             {
-                case ProxyCallbackTypeEnum.Dofus2:return Active<DofusProxyAcceptCallback>(active, port, exe_path);
-                case ProxyCallbackTypeEnum.DofusRetro: return Active<DofusRetroProxyAcceptCallback>(active, port, exe_path);
-                default: logger.Info("default proxy callback was called"); return Active<ProxyAcceptCallback>(active, port, exe_path);
+                case ProxyCallbackTypeEnum.Dofus2:
+                    result = Active(active, port, exe_path, out DofusProxyAcceptCallback dofus2_callback);
+                    _proxy_callbacks.Add(port, dofus2_callback);
+                    return result;
+                case ProxyCallbackTypeEnum.DofusRetro:
+                    result = Active(active, port, exe_path, out DofusRetroProxyAcceptCallback dofusretro_callback);
+                    _proxy_callbacks.Add(port, dofusretro_callback);
+                    return result;//Active<DofusRetroProxyAcceptCallback>(active, port, exe_path, out DofusRetroProxyAcceptCallback dofusretro_callback);
+                default: 
+                    logger.Info("default proxy callback was called");
+                    result = Active(active, port, exe_path, out ProxyAcceptCallback callback);
+                    _proxy_callbacks.Add(port, callback);
+                    return result;//Active<ProxyAcceptCallback>(active, port, exe_path, out ProxyAcceptCallback callback);
             }
         }
     }

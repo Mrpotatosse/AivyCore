@@ -9,6 +9,7 @@ namespace AivyDomain.Mappers.Client
 {
     public class ClientEntityMapper : IMapper<Func<ClientEntity, bool>, ClientEntity>
     {
+        private readonly object _locker = new object();
         private readonly List<ClientEntity> _clients;
 
         public ClientEntityMapper()
@@ -18,17 +19,20 @@ namespace AivyDomain.Mappers.Client
 
         public ClientEntity MapFrom(Func<ClientEntity, bool> input)
         {
-            if (input is null) throw new ArgumentNullException(nameof(input));
-            if (input(new ClientEntity()))
+            lock (_locker)
             {
-                ClientEntity client = new ClientEntity()
+                if (input is null) throw new ArgumentNullException(nameof(input));
+                if (input(new ClientEntity()))
                 {
-                    ReceiveBufferLength = 4096 // to do -> get from file ? 
-                };
-                _clients.Add(client);
-                return client;
+                    ClientEntity client = new ClientEntity()
+                    {
+                        ReceiveBufferLength = 4096 // to do -> get from file ? 
+                    };
+                    _clients.Add(client);
+                    return client;
+                }
+                return _clients.FirstOrDefault(input);
             }
-            return _clients.FirstOrDefault(input);
         }
 
         public bool Remove(Func<ClientEntity, bool> predicat)

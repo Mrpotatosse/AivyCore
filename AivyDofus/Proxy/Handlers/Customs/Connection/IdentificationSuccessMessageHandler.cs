@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy.Handlers.Customs.Connection
 {
-    [ProxyHandler(ProtocolName = "IdentificationSuccessMessage")]
+    //[ProxyHandler(ProtocolName = "IdentificationSuccessMessage")]
     public class IdentificationSuccessMessageHandler : AbstractMessageHandler
     {
         public IdentificationSuccessMessageHandler(AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)

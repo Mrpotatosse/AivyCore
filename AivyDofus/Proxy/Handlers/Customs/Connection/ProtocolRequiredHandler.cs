@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy.Handlers.Customs.Connection
 {
-    //[ProxyHandler(ProtocolName = "ProtocolRequired")]
+    [ProxyHandler(ProtocolName = "ProtocolRequired")]
     public class ProtocolRequiredHandler : AbstractMessageHandler
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -24,6 +24,9 @@ namespace AivyDofus.Proxy.Handlers.Customs.Connection
 
         public override void Handle()
         {
+            _callback._client.IsGameClient = true;
+            _callback._remote.IsGameClient = true;
+            
             logger.Info($"version : {_content["version"]}");
         }
     }

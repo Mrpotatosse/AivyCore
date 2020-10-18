@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +75,27 @@ namespace AivyDofus.Protocol.Buffer
         public MessageBufferWriter(bool clientSide)
         {
             ClientSide = clientSide;
+        }
+
+        // for lua
+        public BigEndianWriter Build(params object[] args)//long messageId, long instanceId, byte[] data)
+        {
+            try
+            {
+                if (args[0] is long messageId
+                 && args[1] is long instanceId
+                 && args[2] is byte[] data)
+                {
+                    return Build((ushort)messageId, (uint)instanceId, data);
+                }
+
+                throw new ArgumentException();
+                //return Build((ushort)messageId, (uint?)instanceId, data);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public BigEndianWriter Build(ushort messageId, uint? instanceId, byte[] data)

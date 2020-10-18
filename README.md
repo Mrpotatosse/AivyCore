@@ -20,7 +20,7 @@ Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permet
 bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satisfaisant pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications
 par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité pour une compléxité beaucoup trop élevé )
 
-Pour charger un fichier durant le runtime , utilisez la fonction ```lua dofile('emplacement de votre fichier sans l'extension')```
+Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('emplacement de votre fichier sans l'extension') ``
 
 
 Un exemple d'implémentation en c#

@@ -36,44 +36,40 @@ namespace AivyDofus
             int reader = 0;
             Console.Title = "AivyCore - 1.0.0";
 
-            if(args[reader] == "-g")
+            if(args.Length > 0 && args[reader] == "-g")
             {
-                reader++;
                 configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, log_console);
             }
 
-            if (int.TryParse(args[reader], out int port))
+            using (CodeSession session = new CodeSession("System",
+                                                         "System.Link",
+                                                         "AivyData",
+                                                         "AivyData.Enums",
+                                                         "AivyDofus",
+                                                         "AivyDofus.Handler",
+                                                         "AivyDofus.IO",
+                                                         "AivyDofus.Protocol",
+                                                         "AivyDofus.Protocol.Buffer",
+                                                         "AivyDofus.Protocol.Elements",
+                                                         "AivyDofus.Proxy",
+                                                         "AivyDomain"))
             {
-                using (CodeSession session = new CodeSession("System",
-                                                             "System.Link",
-                                                             "AivyData",
-                                                             "AivyData.Enums",
-                                                             "AivyDofus",
-                                                             "AivyDofus.Handler",
-                                                             "AivyDofus.IO",
-                                                             "AivyDofus.Protocol",
-                                                             "AivyDofus.Protocol.Buffer",
-                                                             "AivyDofus.Protocol.Elements",
-                                                             "AivyDofus.Proxy",
-                                                             "AivyDomain"))
+                session["multi_proxy"] = new DofusMultiProxy();
+                session["protocol_dofus2"] = BotofuProtocolManager.Protocol;
+
+                session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
+
+                while (Console.ReadLine() is string _code && _code != "")
                 {
-                    session["multi_proxy"] = new DofusMultiProxy();
-                    session["protocol_dofus2"] = BotofuProtocolManager.Protocol;
-
-                    session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
-
-                    while (Console.ReadLine() is string _code && _code != "")
+                    if (session.Execute(_code) is Exception error)
                     {
-                        if (session.Execute(_code) is Exception error)
-                        {
-                            configuration.AddRule(LogLevel.Error, LogLevel.Fatal, log_console_error);
-                            LogManager.Configuration = configuration;
+                        configuration.AddRule(LogLevel.Error, LogLevel.Fatal, log_console_error);
+                        LogManager.Configuration = configuration;
 
-                            CodeSession.logger.Error(error);
+                        CodeSession.logger.Error(error);
 
-                            configuration.RemoveTarget(log_console_error.Name);
-                            LogManager.Configuration = configuration;
-                        }
+                        configuration.RemoveTarget(log_console_error.Name);
+                        LogManager.Configuration = configuration;
                     }
                 }
             }

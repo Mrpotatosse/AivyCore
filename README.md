@@ -86,7 +86,7 @@ c#
     }
 ```
 
-lua (WIP)
+lua (WIP update très bientôt)
 ```lua
 -- variable global : 
 --    - multi_proxy -> DofusMultiProxy

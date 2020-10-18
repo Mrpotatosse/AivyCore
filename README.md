@@ -62,6 +62,8 @@ il fauudra renseigner votre ndc , mdp et la version du jeu)
 
 Voici un exemple pour lancer un DofusServer ou un DofusProxy/DofusRetroProxy
 
+c#
+
 ```csharp
     // un exemple pour lancer 10 server
     DofusServer server = new DofusServer("EMPLACEMENT DU DOSSIER APP");
@@ -82,6 +84,21 @@ Voici un exemple pour lancer un DofusServer ou un DofusProxy/DofusRetroProxy
         ProxyEntity proxy_instance = proxy.Active(true, port_du_proxy + i); 
         Thread.Sleep(2000); // le client Dofus peut ne pas se lancer si vous en ouvre plein en même temps donc mettez une pause entre chaque ouverture de client
     }
+```
+
+lua (WIP)
+```lua
+-- variable global : 
+--    - multi_proxy -> DofusMultiProxy
+--    - protocol_dofus2 -> BotofuProtocol
+
+function start_proxy(port)
+	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'EMPLACEMENT FICHIER', 'EXE_NAME')
+end
+
+-- il faudra indiquer le port
+proxy = start_proxy(666) 
+proxy_callback = multi_proxy[proxy.Port]
 ```
 
 <h2> AivyDofus - Dofus 2.0 - Handler </h2>
@@ -167,3 +184,5 @@ Voici un exemple de Handler commenté :
 - Botofu parser ( https://gitlab.com/botofu/protocol_parser ) ( j'ai directement ajouter le .exe aux ressources ducoup le protocol devrait être parser à chaque ouverture du hook  https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Protocol/Parser/BotofuParser.cs )
   
 - LiteDB (https://www.litedb.org/) ( pour la base de données côté serveur , c'est du NoSQL pour faciliter le stockage d'object ) ( vous pouvez le modifier et importer la base de données qui vous plait https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/API/OpenServerDatabaseApi.cs )
+
+- NLua (https://github.com/NLua/NLua) (pour éxécuter des facilement des scripts Lua (alternatives Handler))

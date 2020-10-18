@@ -52,6 +52,8 @@ Un exemple d'implémentation
     }
 ```
 
+MultiProxy (pour configurer plus facilement des proxys implémentant différent type de handler ) : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/DofusMultiProxy.cs
+
 Proxy : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/DofusProxy.cs
 
 Server : https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/DofusServer.cs

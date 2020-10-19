@@ -54,55 +54,60 @@ namespace AivyDomain.Callback.Client
             // to do
         }
 
+        static readonly object locker = new object();
+
         public override void Callback(IAsyncResult result)
         {
-            _client.Socket = (Socket)result.AsyncState;
-
-            int _rcv_len = _client.Socket.EndReceive(result, out SocketError errorCode);
-
-            if (_rcv_len > 0)
+            lock (locker)
             {
-                if (_client.ReceiveBuffer != null) _client.ReceiveBuffer.Dispose();
-                _client.ReceiveBuffer = new MemoryStream(_buffer, 0, _rcv_len);
-            }
+                _client.Socket = (Socket)result.AsyncState;
 
-            if (errorCode == SocketError.Success && _client.IsRunning && _rcv_len > 0)
-            {
-                if(_client.ReceiveBuffer != null)
-                    _rcv_action?.Invoke(_client.ReceiveBuffer);
+                int _rcv_len = _client.Socket.EndReceive(result, out SocketError errorCode);
 
-                _buffer = new byte[_client.ReceiveBufferLength];
-
-                try
+                if (_rcv_len > 0)
                 {
-                    _client.Socket.BeginReceive(_buffer,
-                                                0,
-                                                _buffer.Length,
-                                                SocketFlags.None,
-                                                Callback,
-                                                _client.Socket);
-                }
-                catch (SocketException)
-                {
-                    _client_disconnector.Handle(_remote);
+                    if (_client.ReceiveBuffer != null) _client.ReceiveBuffer.Dispose();
+                    _client.ReceiveBuffer = new MemoryStream(_buffer, 0, _rcv_len);
                 }
 
-            }
-            else
-            {
-                if(_remote is null)
+                if (errorCode == SocketError.Success && _client.IsRunning && _rcv_len > 0)
                 {
-                    if (_client.IsRunning)
-                    {
-                        _client_disconnector.Handle(_client);
-                    }
-                }
-                else if (_remote.IsRunning)
-                {
-                    if (_rcv_len > 0)
+                    if (_client.ReceiveBuffer != null)
                         _rcv_action?.Invoke(_client.ReceiveBuffer);
-                    else
+
+                    _buffer = new byte[_client.ReceiveBufferLength];
+
+                    try
+                    {
+                        _client.Socket.BeginReceive(_buffer,
+                                                    0,
+                                                    _buffer.Length,
+                                                    SocketFlags.None,
+                                                    Callback,
+                                                    _client.Socket);
+                    }
+                    catch (SocketException)
+                    {
                         _client_disconnector.Handle(_remote);
+                    }
+
+                }
+                else
+                {
+                    if (_remote is null)
+                    {
+                        if (_client.IsRunning)
+                        {
+                            _client_disconnector.Handle(_client);
+                        }
+                    }
+                    else if (_remote.IsRunning)
+                    {
+                        if (_rcv_len > 0)
+                            _rcv_action?.Invoke(_client.ReceiveBuffer);
+                        else
+                            _client_disconnector.Handle(_remote);
+                    }
                 }
             }
         }

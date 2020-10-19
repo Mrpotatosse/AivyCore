@@ -1,3 +1,9 @@
+-- variable global : 
+-- 	- multi_proxy : DofusMultiProxy
+-- 	- protocol_manager : BotofuProtocolManager
+--	- handlers : LuaHandler
+-- 	- sleeper : CodeSleep
+
 -- proxy functions ---
 --
 -- port -> ProxyEntity 																							-- default start from port return ProxyEntity
@@ -83,7 +89,20 @@ function send_chat(proxy, client, channel, content)
 		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
 end
 --
+-- ProxyEntity * ClientEntity * string * string
+-- send chat private message
+function send_private_chat(proxy, client, receiver, content)
+	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
+	local message = get_message('ChatClientPrivateMessage')
+	local message_content = NetworkContentElement()
+	message_content['receiver'] = receiver
+	message_content['content'] = content
+	
+	if send_message(proxy, true, client, message, message_content, instance_id) then
+		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1 end
+end
 --
+-- end game actions
 
 --
 -- end proxy fonctions --- 
@@ -104,7 +123,7 @@ end
 config = get_config('updated') -- get config
 proxy = start_proxy_from_config(config, 666) -- start proxy
 accept_callback = multi_proxy[proxy.Port] -- get callback
--- END MAIN PROGRAM
+-- END MAIN PROGRAM --
 
 
 

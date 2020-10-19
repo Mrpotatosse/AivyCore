@@ -215,27 +215,6 @@ c#
                 { "protocol_id" , 0 } // sur certain type , il peut être obligatoire ( dans le protocol c'est si prefixed_by_type_id = true ) 
                 // { ... }   
             };
-	    
-	    // pour éxécuter du code Lua (indépendement du code Lua de base lancer lors du lancement)
-	    // j'ai un peu forcer sur les importations mdr
-	    using (CodeSession session = new CodeSession("System",
-                                                         "System.Link",
-                                                         "AivyData",
-                                                         "AivyData.Enums",
-                                                         "AivyDofus",
-                                                         "AivyDofus.Handler",
-                                                         "AivyDofus.IO",
-                                                         "AivyDofus.Protocol",
-                                                         "AivyDofus.Protocol.Buffer",
-                                                         "AivyDofus.Protocol.Elements",
-                                                         "AivyDofus.Proxy",
-                                                         "AivyDomain"))
-             	{
-			// si vous voulez importez les fonctions que j'aurais partager
-                    	session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
-			// pour plus d'info consulter le site NLua dans les dépendances et https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/LuaCode/CodeSession.cs
-			// la fonction Execute et ExecuteFile retourne null si le code s'est bien passé sinon il renvoye l'erreur
-		}
         }
         
         // optionel
@@ -251,9 +230,13 @@ c#
     }
 ```
 
-lua (WIP update bientôt)
+lua 
 ```lua
-Pour l'instant les handlers se font uniquement avec du code c# ( mais vous pouvez éxécuter des codes Lua depuis le handler du c# , j'ai mis un exemple un peu plus haut )
+function mon_handler(callback, element, content) -- création du handler
+	print('handle via lua',element.BasicString)
+end
+
+handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers
 ```
 
 <h2> Dépendances </h2>

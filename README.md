@@ -16,7 +16,7 @@ Le but n'est pas de vous donnez une base pour qu'ensuite vous réutilisiez sans 
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
 
-La configuration du proxy se trouve dans ./proxy_api_information.json
+La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement MAIS VIDE !)
 ```json
 [
   {

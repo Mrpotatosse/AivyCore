@@ -106,6 +106,33 @@ fonctionalitées que je rajouterais , pour l'instant il n'y a qu'envoyer des mes
 --	- handlers : LuaHandler
 -- 	- sleeper : CodeSleep
 
+-- proxy functions ---
+--
+-- port -> ProxyEntity 																							-- default start from port return ProxyEntity
+function default(port)
+	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'D:\\AppDofus', 'Dofus')
+end
+-- ProxyData * int -> ProxyEntity 																				-- start from ProxyData and port return ProxyEntity
+function start_proxy_from_config(config, port)
+	return multi_proxy:Active(config.Type, true, port, config.FolderPath, config.ExeName)
+end
+-- string -> ProxyData 																							-- start from string return ProxyData 
+-- read ProxyData from ./proxy_api_information.json  
+function get_config(name)
+	return multi_proxy._proxy_api:GetData(function(data) return data.Name == name end)
+end
+
+-- () -> () 
+-- update protocol_dofus2 
+function update_dofus2_protocol()
+	protocol_dofus2 = protocol_manager[ProxyCallbackTypeEnum.Dofus2]
+end
+
+-- string -> NetworkElement
+function get_message(name)
+	return protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == name end)
+end
+
 -- () -> ClientEntity
 -- get remote ClientEntity from accept_callback where ClientEntity.IsGameClient 
 function get_main_remote()
@@ -186,6 +213,9 @@ config = get_config('updated') -- get config
 proxy = start_proxy_from_config(config, 666) -- start proxy
 accept_callback = multi_proxy[proxy.Port] -- get callback
 -- END MAIN PROGRAM --
+
+
+
 ```
 
 <h2> AivyDofus - Dofus 2.0 - Handler </h2>

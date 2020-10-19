@@ -95,27 +95,71 @@ c#
     }
 ```
 
-lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua.lua sera éxéctuer à chaque lancement du program , il contiendra certaine
-fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité. )
+lua
+
+( les fichiers lua dans https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/ seront éxéctuer à chaque lancement du program , ils contiendront certaines
+fonctionalitées que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure. )
 ```lua
 -- variable global : 
---    - multi_proxy -> DofusMultiProxy
---    - protocol_dofus2 -> BotofuProtocol
+-- 	- multi_proxy : DofusMultiProxy
+-- 	- protocol_manager : BotofuProtocolManager
+--	- handlers : LuaHandler
+-- 	- sleeper : CodeSleep
 
--- int -> ProxyEntity
-function start_proxy(port)
+-- proxy functions ---
+--
+-- port -> ProxyEntity 																							-- default start from port return ProxyEntity
+function default(port)
 	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'D:\\AppDofus', 'Dofus')
 end
--- ProxyData * int -> ProxyEntity
+-- ProxyData * int -> ProxyEntity 																				-- start from ProxyData and port return ProxyEntity
 function start_proxy_from_config(config, port)
 	return multi_proxy:Active(config.Type, true, port, config.FolderPath, config.ExeName)
 end
--- string -> ProxyData
+-- string -> ProxyData 																							-- start from string return ProxyData 
+-- read ProxyData from ./proxy_api_information.json  
 function get_config(name)
 	return multi_proxy._proxy_api:GetData(function(data) return data.Name == name end)
 end
 
+-- () -> () 
+-- update protocol_dofus2 
+function update_dofus2_protocol()
+	protocol_dofus2 = protocol_manager[ProxyCallbackTypeEnum.Dofus2]
+end
+
+-- string -> NetworkElement
+function get_message(name)
+	return protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == name end)
+end
+
+-- () -> ClientEntity
+-- get remote ClientEntity from accept_callback where ClientEntity.IsGameClient 
+function get_main_remote()
+	return accept_callback:_main_remote_client()
+end
+-- () -> ClientEntity
+-- get local ClientEntity from accept_callback where ClientEntity.IsGameClient
+function get_main_local()
+	return accept_callback:_main_local_client()
+end
+
+-- ProxyEntity * ClientEntity * string -> bool
+-- send string (ASCII) message 
+function send_string_message(local_proxy, client, message)
+	if local_proxy == nil then return false
+	elseif client == nil then return false
+	elseif message == nil then return false
+	else		
+		multi_proxy[local_proxy.Port]._client_sender:Handle(client, message)
+		return true
+	end
+end
+
 -- ProxyEntity * bool * ClientEntity * NetworkElement * NetworkContentElement * uint -> bool
+-- send byte[] message
+-- parse content as byte[] with MessageDataBufferWriter
+-- then build header as byte[] and add content as byte[] with MessageBufferWriter
 function send_message(local_proxy, from_client, client, message, message_content, instance_id)
 	if local_proxy == nil then return false
 	elseif client == nil then return false
@@ -131,9 +175,14 @@ function send_message(local_proxy, from_client, client, message, message_content
 	end
 end
 
-function test_send_chat(proxy, client, channel, content)
+-- game actions
+--
+-- ProxyEntity * ClientEntity * byte * string -> ()
+-- send chat message
+-- increase GLOBAL_INSTANCE_ID if success
+function send_chat(proxy, client, channel, content)
 	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
-	local message = protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
+	local message = get_message('ChatClientMultiMessage') --protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
 	local message_content = NetworkContentElement()
 	message_content['channel'] = channel
 	message_content['content'] = content
@@ -141,19 +190,32 @@ function test_send_chat(proxy, client, channel, content)
 	if send_message(proxy, true, client, message, message_content, instance_id) then 
 		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
 end
+--
+--
 
--- set comment if you want to start manualy
-if proxy == nil then
-	config = get_config('updated')
-	proxy = start_proxy_from_config(config, 666)
-	accept_callback = multi_proxy[proxy.Port]
-	
-	--
-	-- pour avoir le client c'est : local = accept_callback:_main_local_client() -- pour dofus , le main client est définie par la réception du ProtocolRequiredMessage
-	-- pour avoir le server c'est : remote = accept_callback:_main_remote_client() -- 		---		//		--- 
-	-- appelez ses fonctions pour obtenir le client communiquant avec le jeu
-	--
+--
+-- end proxy fonctions --- 
+
+
+
+-- general functions ---
+-- double * FUNC -> ()																							-- wait double millisecondes then do FUNC
+-- 
+-- for more information https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/LuaCode/CodeSleep.cs
+function sleep_then(value, on_end)
+	return sleeper:sleep_and_continue(value, on_end)
 end
+--
+-- end general functions ---
+
+-- MAIN PROGRAM --
+config = get_config('updated') -- get config
+proxy = start_proxy_from_config(config, 666) -- start proxy
+accept_callback = multi_proxy[proxy.Port] -- get callback
+-- END MAIN PROGRAM --
+
+
+
 ```
 
 <h2> AivyDofus - Dofus 2.0 - Handler </h2>
@@ -215,27 +277,6 @@ c#
                 { "protocol_id" , 0 } // sur certain type , il peut être obligatoire ( dans le protocol c'est si prefixed_by_type_id = true ) 
                 // { ... }   
             };
-	    
-	    // pour éxécuter du code Lua (indépendement du code Lua de base lancer lors du lancement)
-	    // j'ai un peu forcer sur les importations mdr
-	    using (CodeSession session = new CodeSession("System",
-                                                         "System.Link",
-                                                         "AivyData",
-                                                         "AivyData.Enums",
-                                                         "AivyDofus",
-                                                         "AivyDofus.Handler",
-                                                         "AivyDofus.IO",
-                                                         "AivyDofus.Protocol",
-                                                         "AivyDofus.Protocol.Buffer",
-                                                         "AivyDofus.Protocol.Elements",
-                                                         "AivyDofus.Proxy",
-                                                         "AivyDomain"))
-             	{
-			// si vous voulez importez les fonctions que j'aurais partager
-                    	session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
-			// pour plus d'info consulter le site NLua dans les dépendances et https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/LuaCode/CodeSession.cs
-			// la fonction Execute et ExecuteFile retourne null si le code s'est bien passé sinon il renvoye l'erreur
-		}
         }
         
         // optionel
@@ -251,9 +292,13 @@ c#
     }
 ```
 
-lua (WIP update bientôt)
+lua 
 ```lua
-Pour l'instant les handlers se font uniquement avec du code c# ( mais vous pouvez éxécuter des codes Lua depuis le handler du c# , j'ai mis un exemple un peu plus haut )
+function mon_handler(callback, element, content) -- création du handler
+	print('handle via lua',element.BasicString)
+end
+
+handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers
 ```
 
 <h2> Dépendances </h2>

@@ -127,6 +127,7 @@ fonctionalitées que je rajouterais , pour l'instant il n'y a qu'envoyer des mes
 -- variable global : 
 -- 	- multi_proxy : DofusMultiProxy
 -- 	- protocol_manager : BotofuProtocolManager
+--	- protocol_dofus2 -> BotofuProtocol -> utilisez update_dofus2_protocol() pour le mettre à jour au moins 1 fois
 --	- handlers : LuaHandler
 -- 	- sleeper : CodeSleep
 
@@ -236,6 +237,7 @@ end
 config = get_config('updated') -- get config
 proxy = start_proxy_from_config(config, 666) -- start proxy
 accept_callback = multi_proxy[proxy.Port] -- get callback
+-- il faudra appeler update_dofus2_protocol() pour avoir protocol_dofus2 à jour ( protocol_dofus2 = )
 -- END MAIN PROGRAM --
 
 

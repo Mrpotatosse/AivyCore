@@ -16,6 +16,30 @@ Le but n'est pas de vous donnez une base pour qu'ensuite vous réutilisiez sans 
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
 
+La configuration du proxy se trouve dans ./proxy_api_information.json
+```json
+[
+  {
+    "Name": "updated",
+    "FolderPath": "D:\\AppDofus",
+    "ExeName": "Dofus",
+    "Type": 2
+  },  
+  {
+    "Name": "dofus retro",
+    "FolderPath": "D:\\AppDofusRetro\\resources\\app\\retroclient",
+    "ExeName": "Dofus",
+    "Type": 1
+  },  
+  {
+    "Name": "no protocol reading",
+    "FolderPath": "D:\\AppDofus",
+    "ExeName": "Dofus",
+    "Type": 0
+  }
+]
+```
+
 Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permettre d'éxécuter du code Lua au runtime ( c'est pour me faciliter les tests pour différents types de
 bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satisfaisant pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications
 par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité pour une compléxité beaucoup trop élevé )

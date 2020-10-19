@@ -95,8 +95,10 @@ c#
     }
 ```
 
-lua ( le fichier https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/AivyDofusLua.lua sera éxéctuer à chaque lancement du program , il contiendra certaine
-fonctionalité que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure que j'ajouterais différente fonctionnalité. )
+lua
+
+( les fichiers lua dans https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/ seront éxéctuer à chaque lancement du program , ils contiendront certaines
+fonctionalitées que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure. )
 ```lua
 -- variable global : 
 -- 	- multi_proxy : DofusMultiProxy

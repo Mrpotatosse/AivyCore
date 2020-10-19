@@ -1,4 +1,5 @@
-﻿using AivyDofus.Handler;
+﻿using AivyData.Enums;
+using AivyDofus.Handler;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Proxy.Callbacks;
 using AivyDomain.Callback.Client;
@@ -23,7 +24,7 @@ namespace AivyDofus.Proxy.Handlers.Customs.World.Exchange
 
         public override bool IsForwardingData => true;
 
-        public static readonly NetworkElement _exchange_object_move_kama = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "ExchangeObjectMoveKamaMessage"];
+        public static readonly NetworkElement _exchange_object_move_kama = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "ExchangeObjectMoveKamaMessage"];
         public static NetworkContentElement _exchange_object_move_kama_message(long quantity)
         {
             return new NetworkContentElement()

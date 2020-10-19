@@ -19,6 +19,11 @@ namespace AivyDomain.UseCases.Client
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
+        public ClientEntity Handle(ClientEntity client, string data)
+        {
+            return Handle(client, Encoding.ASCII.GetBytes(data));
+        }
+
         public ClientEntity Handle(ClientEntity client, byte[] data)
         {   
             return _repository.ActionResult(x => x.IsRunning ? x.Socket.RemoteEndPoint == client.Socket.RemoteEndPoint

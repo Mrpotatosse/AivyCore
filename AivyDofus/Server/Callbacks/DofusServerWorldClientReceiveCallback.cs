@@ -41,16 +41,16 @@ namespace AivyDofus.Server.Callbacks
             }
         };
 
-        private readonly NetworkElement _protocol_required = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "ProtocolRequired"];
+        private readonly NetworkElement _protocol_required = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "ProtocolRequired"];
 
-        private readonly NetworkElement _hello_game = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "HelloGameMessage"];
+        private readonly NetworkElement _hello_game = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "HelloGameMessage"];
         private readonly NetworkContentElement _hello_game_message_content = new NetworkContentElement();
 
 
         private static readonly string _raw_data_location = Path.Combine(BotofuParser._this_executable_name, "rawdatamessage_test.swf");
         private static readonly byte[] _raw_data_bytes = File.Exists(_raw_data_location) ? File.ReadAllBytes(_raw_data_location) : new byte[0];
 
-        private readonly NetworkElement _raw_data_message = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
+        private readonly NetworkElement _raw_data_message = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
         private readonly NetworkContentElement _raw_data_content = new NetworkContentElement()
         {
             fields = 
@@ -162,7 +162,7 @@ namespace AivyDofus.Server.Callbacks
                 long _current_data_len = full_data.Length - _position;
                 if (_current_data_len >= _length)
                 {
-                    NetworkElement _element = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
+                    NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
                     _data = new byte[_current_data_len];
 
                     byte[] packet_data = new byte[(int)(_position - start_pos) + _length.Value];

@@ -1,5 +1,6 @@
 ﻿using AivyData.API.Server.Account;
 using AivyData.Entities;
+using AivyData.Enums;
 using AivyDofus.Handler;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Server.Callbacks;
@@ -45,8 +46,8 @@ namespace AivyDofus.Server.Handlers.Customs.Connection
                 }
                 _world_callback._client.CurrentToken = token;
 
-                NetworkElement authentication_accepted_message = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "AuthenticationTicketAcceptedMessage"];
-                NetworkElement account_capabilities_message = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "AccountCapabilitiesMessage"];
+                NetworkElement authentication_accepted_message = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "AuthenticationTicketAcceptedMessage"];
+                NetworkElement account_capabilities_message = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "AccountCapabilitiesMessage"];
 
                 NetworkContentElement account_capabilities_content = new NetworkContentElement()
                 {

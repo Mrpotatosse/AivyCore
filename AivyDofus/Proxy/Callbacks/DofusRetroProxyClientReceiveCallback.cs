@@ -36,13 +36,19 @@ namespace AivyDofus.Proxy.Callbacks
             // ONLY FOR TEST ( set account_name and clear_password with your own dofus account information ) set to commentary if you want to disable it
             if (msg.StartsWith("HC"))
             {
+                _client.IsGameClient = true;
+                _remote.IsGameClient = true;
+
+                _client.CurrentToken = msg.Substring(2, msg.Length - 2);
+                _remote.CurrentToken = _client.CurrentToken;
+
                 string account_name = "nomdecompte";
                 string clear_password = "motdepasse";
 
                 string password_key = msg.Substring(2, msg.Length - 2);
 
                 // set version manualy
-                string version = "1.33.5\n";
+                string version = "1.33.6\n";
                 string account_info = $"{account_name}\n{password_encrypt(clear_password, password_key)}\n";
                 string af = " Af\n";
 

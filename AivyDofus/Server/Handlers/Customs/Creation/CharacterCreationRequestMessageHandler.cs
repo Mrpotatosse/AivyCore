@@ -1,6 +1,7 @@
 ﻿using AivyData.API;
 using AivyData.API.Server.Actor;
 using AivyData.API.Server.Look;
+using AivyData.Enums;
 using AivyDofus.Extension.Server.Data;
 using AivyDofus.Handler;
 using AivyDofus.Protocol.Elements;
@@ -31,14 +32,14 @@ namespace AivyDofus.Server.Handlers.Customs.Creation
 
         }
 
-        private static readonly NetworkElement _character_creation_result = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "CharacterCreationResultMessage"];
+        private static readonly NetworkElement _character_creation_result = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "CharacterCreationResultMessage"];
         private static NetworkContentElement _character_creation_result_content(string error_code)
         {
             return new NetworkContentElement()
             {
                 fields =
                 {
-                    { "result", int.Parse(BotofuProtocolManager.Protocol[x => x.name == "CharacterCreationResultEnum"][error_code]) }
+                    { "result", int.Parse(BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][x => x.name == "CharacterCreationResultEnum"][error_code]) }
                 }
             };
         }

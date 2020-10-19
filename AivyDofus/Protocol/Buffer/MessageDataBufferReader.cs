@@ -1,4 +1,5 @@
-﻿using AivyDofus.IO;
+﻿using AivyData.Enums;
+using AivyDofus.IO;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Elements.Fields;
 using System;
@@ -14,7 +15,7 @@ namespace AivyDofus.Protocol.Buffer
     {
         private static bool _is_primitive(ClassField field)
         {
-            return BotofuProtocolManager.Protocol[ProtocolKeyEnum.MessagesAndTypes, x => x.name == field.type] is null;
+            return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.MessagesAndTypes, x => x.name == field.type] is null;
         }
 
         private NetworkContentElement _network_content;
@@ -24,7 +25,7 @@ namespace AivyDofus.Protocol.Buffer
         {
             get
             {
-                return BotofuProtocolManager.Protocol[ProtocolKeyEnum.MessagesAndTypes, x => x.name == _network_base.super];
+                return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.MessagesAndTypes, x => x.name == _network_base.super];
             }
         }
 
@@ -133,12 +134,12 @@ namespace AivyDofus.Protocol.Buffer
                     string read_id_method = $"Read{field.write_type_id_method.Replace("write", "")}";
                     dynamic protocol_id = _read_value(read_id_method, reader);
 
-                    _type_reader = new MessageDataBufferReader(BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.protocolID == protocol_id]);
+                    _type_reader = new MessageDataBufferReader(BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.protocolID == protocol_id]);
                     _type_reader._network_content["protocol_id"] = protocol_id;
                 }
                 else
                 {
-                    _type_reader = new MessageDataBufferReader(BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.name == field.type]);
+                    _type_reader = new MessageDataBufferReader(BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.name == field.type]);
                 }
 
                 return _type_reader.Parse(reader);

@@ -1,5 +1,7 @@
 ﻿using AivyData.API;
 using AivyData.Entities;
+using AivyData.Enums;
+using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Parser;
 using AivyDofus.Server.API;
 using AivyDofus.Server.Callbacks;
@@ -39,9 +41,9 @@ namespace AivyDofus.Server
                 _server_repository = new ServerRepository(_server_api, _server_mapper);
                 _server_creator = new ServerCreatorRequest(_server_repository);
                 _server_activator = new ServerActivatorRequest(_server_repository);
-            }
 
-            new BotofuParser(_invoker_path).Parse();
+                BotofuProtocolManager.Instance.AddParser(ProxyCallbackTypeEnum.Dofus2, new BotofuParser(_invoker_path, "DofusServerProtocol"));
+            }
         }
 
         public ServerEntity Active(bool active, int port)

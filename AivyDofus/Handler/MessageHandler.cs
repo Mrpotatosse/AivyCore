@@ -1,5 +1,6 @@
 ﻿using AivyData.Entities;
 using AivyDofus.Extension;
+using AivyDofus.LuaCode;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Proxy.Handlers;
 using AivyDomain.Callback.Client;
@@ -17,7 +18,9 @@ namespace AivyDofus.Handler
 {
     public class MessageHandler<Attribute> where Attribute : HandlerAttribute 
     {
-        protected static readonly object _lock = new object();
+        public static readonly LuaHandler LuaHandler = new LuaHandler(); 
+
+        protected readonly object _lock = new object();
         protected readonly IEnumerable<Type> _handlers_type;
 
         public MessageHandler()
@@ -62,6 +65,8 @@ namespace AivyDofus.Handler
             bool _all_true = true;
             foreach (Type _handler in _handlers)
                 _all_true = _all_true && await _handle(_handler, callback, element, content);
+
+            await LuaHandler.Execute(element.name);
             return _all_true;
         }
 

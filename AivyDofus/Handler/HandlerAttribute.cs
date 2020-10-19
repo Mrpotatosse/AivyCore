@@ -1,4 +1,5 @@
-﻿using AivyDofus.Protocol.Elements;
+﻿using AivyData.Enums;
+using AivyDofus.Protocol.Elements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,9 +27,9 @@ namespace AivyDofus.Handler
                     throw new ArgumentNullException("protocolId or protocolName is not assigned");
 
                 if (ProtocolId > 0)
-                    return BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.protocolID == ProtocolId];
+                    return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == ProtocolId];
 
-                return BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == ProtocolName];
+                return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == ProtocolName];
             }
         }
     }

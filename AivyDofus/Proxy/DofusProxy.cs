@@ -1,4 +1,6 @@
 ﻿using AivyData.Entities;
+using AivyData.Enums;
+using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Parser;
 using AivyDofus.Proxy.API;
 using AivyDofus.Proxy.Callbacks;
@@ -84,9 +86,10 @@ namespace AivyDofus.Proxy
                 _proxy_repository = new ProxyRepository(_proxy_api, _proxy_mapper);
                 _proxy_creator = new ProxyCreatorRequest(_proxy_repository);
                 _proxy_activator = new ProxyActivatorRequest(_proxy_repository);
+
+                BotofuProtocolManager.Instance.AddParser(ProxyCallbackTypeEnum.Dofus2, new BotofuParser(_invoker_path, "DofusProxyProtocol"));
+                //_protocol_manager = new BotofuProtocolManager(new BotofuParser(_invoker_path, "DofusProxyProtocol"));
             }
-                
-            new BotofuParser(_invoker_path).Parse();
         }
 
         public virtual ProxyEntity Active(bool active, int port)

@@ -59,8 +59,6 @@ namespace AivyDofus.Proxy
         {
             if(_proxy_repository is null)
             {
-                protocol2_parsed = false;
-
                 _proxy_repository = new ProxyRepository(_proxy_api, _proxy_mapper);
                 _proxy_creator = new ProxyCreatorRequest(_proxy_repository);
                 _proxy_activator = new ProxyActivatorRequest(_proxy_repository);
@@ -90,16 +88,8 @@ namespace AivyDofus.Proxy
             }
         }
 
-        private bool protocol2_parsed { get; set; } 
         public ProxyEntity Active(ProxyCallbackTypeEnum type, bool active, int port, string folder_path, string exe_name)
         {
-            if (type == ProxyCallbackTypeEnum.Dofus2 && !protocol2_parsed)
-            {
-                protocol2_parsed = true;
-                string _invoker_path = $"{folder_path}/DofusInvoker.swf";
-                new BotofuParser(_invoker_path).Parse();
-            }
-
             string exe_path = Path.Combine(folder_path, $"{exe_name}.exe");
             if (!File.Exists(exe_path))
             {
@@ -110,6 +100,9 @@ namespace AivyDofus.Proxy
             switch (type)
             {
                 case ProxyCallbackTypeEnum.Dofus2:
+                    string invoker_path = Path.Combine(folder_path, "DofusInvoker.swf");
+                    if (BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2] is null)
+                        BotofuProtocolManager.Instance.AddParser(type, new BotofuParser(invoker_path, "MultiProxyProtocol"));
                     result = Active(active, port, exe_path, out DofusProxyAcceptCallback dofus2_callback);
                     _proxy_callbacks.Add(port, dofus2_callback);
                     return result;

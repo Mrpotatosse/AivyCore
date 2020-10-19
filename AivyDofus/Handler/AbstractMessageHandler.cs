@@ -74,7 +74,7 @@ namespace AivyDofus.Handler
 
             if (instance_id < 0) throw new ArgumentOutOfRangeException(nameof(instance_id));
 
-            NetworkElement element = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "ChatClientMultiMessage"];
+            NetworkElement element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "ChatClientMultiMessage"];
             NetworkContentElement element_content = new NetworkContentElement()
             {
                 fields =

@@ -120,7 +120,7 @@ namespace AivyDofus.Proxy.Callbacks
                 long _current_data_len = full_data.Length - _position;
                 if (_current_data_len >= _length)
                 {
-                    NetworkElement _element = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
+                    NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
                     _data = new byte[_current_data_len];
 
                     if (_tag == ProxyTagEnum.Client)
@@ -140,7 +140,7 @@ namespace AivyDofus.Proxy.Callbacks
                     {
                         if (_message_id == StaticValues.RAW_DATA_MSG_RCV_ID) // rdm
                         {
-                            _element = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
+                            _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
                         }
                         _proxy.MESSAGE_RECEIVED_FROM_LAST++;
                     }

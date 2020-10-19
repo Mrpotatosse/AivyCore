@@ -16,6 +16,8 @@ namespace AivyDofus.Proxy.API
 {
     public class OpenProxyConfigurationApi : IApi<ProxyData>
     {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         readonly string _location;
 
         private List<ProxyData> _data { get; set; }
@@ -62,8 +64,9 @@ namespace AivyDofus.Proxy.API
             {
                 return JsonConvert.DeserializeObject<List<ProxyData>>(File.ReadAllText(_location), new JsonSerializerSettings() { Formatting = Formatting.Indented });
             }
-            catch
+            catch(Exception e)
             {
+                logger.Error(e);
                 return new List<ProxyData>();
             }
         }

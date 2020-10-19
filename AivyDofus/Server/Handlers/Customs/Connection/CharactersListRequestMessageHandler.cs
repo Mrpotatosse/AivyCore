@@ -1,5 +1,6 @@
 ﻿using AivyData.API;
 using AivyData.API.Server.Actor;
+using AivyData.Enums;
 using AivyDofus.Extension.Server.Data;
 using AivyDofus.Handler;
 using AivyDofus.Protocol.Elements;
@@ -29,10 +30,10 @@ namespace AivyDofus.Server.Handlers.Customs.Connection
 
         }
 
-        public static readonly NetworkElement _character_base_informations = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.name == "CharacterBaseInformations"];
-        public static readonly NetworkElement _character_hardcore_base_informations = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.name == "CharacterHardcoreOrEpicInformations"];
+        public static readonly NetworkElement _character_base_informations = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.name == "CharacterBaseInformations"];
+        public static readonly NetworkElement _character_hardcore_base_informations = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.name == "CharacterHardcoreOrEpicInformations"];
 
-        public static readonly NetworkElement _characters_list_message = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Messages, x => x.name == "CharactersListMessage"];
+        public static readonly NetworkElement _characters_list_message = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "CharactersListMessage"];
         public static NetworkContentElement _characters_list_content(IEnumerable<PlayerData> players, ServerData server_data, bool hasStartupActions = false)
         {
             return new NetworkContentElement()

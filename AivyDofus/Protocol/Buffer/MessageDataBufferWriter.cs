@@ -1,4 +1,5 @@
-﻿using AivyDofus.IO;
+﻿using AivyData.Enums;
+using AivyDofus.IO;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Elements.Fields;
 using NLog;
@@ -18,7 +19,7 @@ namespace AivyDofus.Protocol.Buffer
 
         private static bool _is_primitive(ClassField field)
         {
-            return BotofuProtocolManager.Protocol[ProtocolKeyEnum.MessagesAndTypes, x => x.name == field.type] is null;
+            return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.MessagesAndTypes, x => x.name == field.type] is null;
         }
 
         private NetworkContentElement _network_content;
@@ -28,7 +29,7 @@ namespace AivyDofus.Protocol.Buffer
         {
             get
             {
-                return BotofuProtocolManager.Protocol[ProtocolKeyEnum.MessagesAndTypes, x => x.name == _network_base.super];
+                return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.MessagesAndTypes, x => x.name == _network_base.super];
             }
         }
 
@@ -147,11 +148,11 @@ namespace AivyDofus.Protocol.Buffer
                     string write_type_id_method = field.write_type_id_method.Replace("write", "Write");
                     _write_value(write_type_id_method, value["protocol_id"], writer);
 
-                    var_type = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.protocolID == value["protocol_id"]];
+                    var_type = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.protocolID == value["protocol_id"]];
                 }
                 else
                 {
-                    var_type = BotofuProtocolManager.Protocol[ProtocolKeyEnum.Types, x => x.name == field.type];
+                    var_type = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Types, x => x.name == field.type];
                 }
 
                 MessageDataBufferWriter _writer = new MessageDataBufferWriter(var_type);

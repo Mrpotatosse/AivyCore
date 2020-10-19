@@ -66,6 +66,7 @@ namespace AivyDofus
                 session["sleeper"] = new CodeSleep();
 
                 session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLua));
+                session.Execute(Encoding.UTF8.GetString(Properties.Resources.AivyDofusLuaHandler));
 
                 while (Console.ReadLine() is string _code && _code != "")
                 {

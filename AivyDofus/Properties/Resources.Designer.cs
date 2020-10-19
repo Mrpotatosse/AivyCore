@@ -73,6 +73,16 @@ namespace AivyDofus.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] AivyDofusLuaHandler {
+            get {
+                object obj = ResourceManager.GetObject("AivyDofusLuaHandler", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] botofu_protocol_parser {
             get {
                 object obj = ResourceManager.GetObject("botofu_protocol_parser", resourceCulture);

@@ -66,7 +66,7 @@ namespace AivyDofus.Handler
             foreach (Type _handler in _handlers)
                 _all_true = _all_true && await _handle(_handler, callback, element, content);
 
-            await LuaHandler.Execute(element.name);
+            await LuaHandler.Execute(element.name, callback, element, content);
             return _all_true;
         }
 

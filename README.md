@@ -18,9 +18,12 @@ AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com 
 
 Lors du lancement un interpréteur Lua ( basé sur NLua ) est lancer pour permettre d'éxécuter du code Lua au runtime ( c'est pour me faciliter les tests pour différents types de
 bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satisfaisant pour des actions globals à éxécuter sur chaque message reçu , pour faire des vérifications
-par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité )
+par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité pour une compléxité beaucoup trop élevé )
 
-Un exemple d'implémentation
+Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('emplacement de votre fichier') ``
+
+
+Un exemple d'implémentation en c#
 
 ```csharp 
     class Program
@@ -144,6 +147,12 @@ if proxy == nil then
 	config = get_config('updated')
 	proxy = start_proxy_from_config(config, 666)
 	accept_callback = multi_proxy[proxy.Port]
+	
+	--
+	-- pour avoir le client c'est : local = accept_callback:_main_local_client() -- pour dofus , le main client est définie par la réception du ProtocolRequiredMessage
+	-- pour avoir le server c'est : remote = accept_callback:_main_remote_client() -- 		---		//		--- 
+	-- appelez ses fonctions pour obtenir le client communiquant avec le jeu
+	--
 end
 ```
 

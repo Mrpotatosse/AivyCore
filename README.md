@@ -321,7 +321,7 @@ c#
 lua 
 ```lua
 function mon_handler(callback, element, content) -- création du handler
-	print('handle via lua',element.BasicString)
+	print('handle '..element.BasicString..' with lua')
 end
 
 handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers

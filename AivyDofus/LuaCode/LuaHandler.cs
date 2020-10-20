@@ -14,19 +14,23 @@ namespace AivyDofus.LuaCode
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private readonly Dictionary<string, IList<Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement>>> _handlers = 
-            new Dictionary<string, IList<Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement>>>();
+        private readonly Dictionary<string, IList<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>> _handlers = 
+            new Dictionary<string, IList<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>>();
 
-        public async Task Execute(string protocol_name, AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)
+        public async Task<bool> Execute(string protocol_name, AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)
         {
+            bool result = true;
+
             if (_handlers.ContainsKey(protocol_name)) 
             {
-                foreach (Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement> action in _handlers[protocol_name])
-                    await AsyncExtension.ExecuteAsync(() => { action(callback, element, content); }, null, e => { logger.Error(e); });
+                foreach (Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action in _handlers[protocol_name])
+                    await AsyncExtension.ExecuteAsync(() => { result = result && action(callback, element, content); }, null, e => { logger.Error(e); });
             }
+
+            return result;
         }
 
-        public void Set(string protocol_name, IList<Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement>> action)
+        public void Set(string protocol_name, IList<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>> action)
         {
             Clear(protocol_name);
             _handlers.Add(protocol_name, action);
@@ -37,12 +41,12 @@ namespace AivyDofus.LuaCode
             Add(message.protocol_name, message.handle);
         }
 
-        public void Add(string protocol_name, Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement> action)
+        public void Add(string protocol_name, Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action)
         {
             if (_handlers.ContainsKey(protocol_name))
                 _handlers[protocol_name].Add(action);
             else
-                _handlers.Add(protocol_name, new Action<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement>[] { action });
+                _handlers.Add(protocol_name, new Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>[] { action });
         }
 
         public void Clear(string protocol_name)

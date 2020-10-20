@@ -104,8 +104,8 @@ namespace AivyDofus.Proxy.Callbacks
                     _position += sizeof(uint);
                 }
 
-                if (full_data.Length - _position < _static_header)
-                    break;
+                //if (full_data.Length - _position < _static_header)
+                //    break;
 
                 switch (_static_header)
                 {
@@ -159,6 +159,12 @@ namespace AivyDofus.Proxy.Callbacks
                             if (_handler.Handle(this, _element, _data_buffer_reader.Parse(big_data_reader)).Result)
                             {
                                 _client_sender.Handle(_remote, packet_data);
+
+                                logger.Info("=> forwarded");
+                            }
+                            else
+                            {
+                                logger.Info("=> not forwarded");
                             }
                         }
                     }

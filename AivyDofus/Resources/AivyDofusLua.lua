@@ -1,12 +1,13 @@
 -- variable global : 
 -- 	- multi_proxy : DofusMultiProxy
 -- 	- protocol_manager : BotofuProtocolManager
+--  - protocol_dofus2 : BotofuProtocol 
 --	- handlers : LuaHandler
 -- 	- sleeper : CodeSleep
 
 -- proxy functions ---
 --
--- port -> ProxyEntity 																							-- default start from port return ProxyEntity
+-- int -> ProxyEntity 																							-- default start from port return ProxyEntity
 function default(port)
 	return multi_proxy:Active(ProxyCallbackTypeEnum.Dofus2, true, port, 'D:\\AppDofus', 'Dofus')
 end
@@ -29,6 +30,10 @@ end
 -- string -> NetworkElement
 function get_message(name)
 	return protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == name end)
+end
+-- string -> NetworkElement
+function get_type(name)
+	return protocol_dofus2:Get(ProtocolKeyEnum.Types, function(el) return el.name == name end)	
 end
 
 -- () -> ClientEntity
@@ -119,10 +124,12 @@ end
 --
 -- end general functions ---
 
--- MAIN PROGRAM --
+-- MAIN PROGRAM -- 
+-- set comment if you want to run different
 config = get_config('updated') -- get config
 proxy = start_proxy_from_config(config, 666) -- start proxy
 accept_callback = multi_proxy[proxy.Port] -- get callback
+sleep_then(2000, update_dofus2_protocol) -- update dofus 2 protocol
 -- END MAIN PROGRAM --
 
 

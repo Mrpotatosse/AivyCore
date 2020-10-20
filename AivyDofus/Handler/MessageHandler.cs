@@ -5,6 +5,7 @@ using AivyDofus.Protocol.Elements;
 using AivyDofus.Proxy.Handlers;
 using AivyDomain.Callback.Client;
 using AivyDomain.UseCases.Client;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -61,12 +62,15 @@ namespace AivyDofus.Handler
 
         public async Task<bool> Handle(AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            logger.Info(element.BasicString);
+
             IEnumerable<Type> _handlers = _handlers_type.Where(x => x.GetCustomAttribute<Attribute>().BaseMessage.protocolID == element.protocolID);
             bool _all_true = true;
             foreach (Type _handler in _handlers)
                 _all_true = _all_true && await _handle(_handler, callback, element, content);
 
-            await LuaHandler.Execute(element.name, callback, element, content);
+            _all_true = _all_true && await LuaHandler.Execute(element.name, callback, element, content);
             return _all_true;
         }
 

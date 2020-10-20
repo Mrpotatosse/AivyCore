@@ -43,7 +43,9 @@ namespace AivyDofus
             if(args.Length > 0 && args[reader] == "-g")
             {
                 reader++;
+
                 configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, log_console);
+                LogManager.Configuration = configuration;
             }
 
             using (CodeSession session = new CodeSession("System",

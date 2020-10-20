@@ -212,8 +212,12 @@ c#
 
 lua 
 ```lua
+
+-- AbstractClientReceiveCallback * NetworkElement * NetworkContentElement -> bool
+-- return forwarding value (same as IsForwardingData on c# source code)
 function mon_handler(callback, element, content) -- création du handler
 	print('handle '..element.BasicString..' with lua')
+	return true
 end
 
 handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers

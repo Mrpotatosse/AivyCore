@@ -119,7 +119,7 @@ c#
     }
 ```
 
-lua
+lua 
 
 ( les fichiers lua dans https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Resources/ seront éxéctuer à chaque lancement du program , ils contiendront certaines
 fonctionalitées que je rajouterais , pour l'instant il n'y a qu'envoyer des messages , mais je vais remplir au fur et à mesure. )

@@ -12,13 +12,11 @@
 -- same as c# handler , check README and c# source code for more information
 function protocol_required(callback, message, message_content)
 	print('from lua : '..message.BasicString)
-	print(message_content)
 	return true
 end
 
 function hello_connect_message(callback, message, message_content)
 	print('from lua : '..message.BasicString)
-	print(message_content)
 	return true
 end
 

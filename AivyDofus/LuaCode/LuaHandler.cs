@@ -5,6 +5,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace AivyDofus.LuaCode
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private readonly Dictionary<string, IList<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>> _handlers = 
-            new Dictionary<string, IList<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>>();
+        private readonly Dictionary<string, IEnumerable<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>> _handlers = 
+            new Dictionary<string, IEnumerable<Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>>>();
 
         public async Task<bool> Execute(string protocol_name, AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)
         {
@@ -44,7 +45,9 @@ namespace AivyDofus.LuaCode
         public void Add(string protocol_name, Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action)
         {
             if (_handlers.ContainsKey(protocol_name))
-                _handlers[protocol_name].Add(action);
+            {
+                _handlers[protocol_name] = _handlers[protocol_name].Append(action);
+            }
             else
                 _handlers.Add(protocol_name, new Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>[] { action });
         }

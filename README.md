@@ -49,10 +49,10 @@ par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de m
 
 Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('emplacement de votre fichier') ``
 
-<detail>
+<details>
 	<summary>Proxy Distant</summary>
 	
-</detail>
+</details>
 
 
 Un exemple d'implémentation en c#

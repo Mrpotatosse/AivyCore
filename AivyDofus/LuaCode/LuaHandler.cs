@@ -37,12 +37,12 @@ namespace AivyDofus.LuaCode
             _handlers.Add(protocol_name, action);
         }
 
-        public void Add(LuaAbstractMessageHandler message)
+        public int Add(LuaAbstractMessageHandler message)
         {
-            Add(message.protocol_name, message.handle);
+            return Add(message.protocol_name, message.handle);
         }
 
-        public void Add(string protocol_name, Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action)
+        public int Add(string protocol_name, Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action)
         {
             if (_handlers.ContainsKey(protocol_name))
             {
@@ -50,6 +50,23 @@ namespace AivyDofus.LuaCode
             }
             else
                 _handlers.Add(protocol_name, new Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool>[] { action });
+
+            return _handlers[protocol_name].Count() - 1;
+        }
+
+        public bool Remove(string protocol_name, int id)
+        {
+            int count = _handlers[protocol_name].Count();
+
+            if (id > count) return false;
+
+            if(_handlers[protocol_name].ElementAt(id) is Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> found)
+            {   
+                _handlers[protocol_name] = _handlers[protocol_name].Where(x => x != found);
+                return true;
+            }
+
+            return false;
         }
 
         public void Clear(string protocol_name)

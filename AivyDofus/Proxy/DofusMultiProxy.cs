@@ -1,6 +1,7 @@
 ﻿using AivyData.API;
 using AivyData.Entities;
 using AivyData.Enums;
+using AivyDofus.DofusMap;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Parser;
 using AivyDofus.Proxy.API;
@@ -39,6 +40,7 @@ namespace AivyDofus.Proxy
         protected readonly ProxyEntityMapper _proxy_mapper = new ProxyEntityMapper();
 
         protected readonly ProxyCreatorRequest _proxy_creator;
+        protected readonly RemoteProxyCreatorRequest _remote_proxy_creator;
         protected readonly ProxyActivatorRequest _proxy_activator;
 
         private readonly Dictionary<int, ProxyAcceptCallback> _proxy_callbacks;
@@ -61,17 +63,70 @@ namespace AivyDofus.Proxy
             {
                 _proxy_repository = new ProxyRepository(_proxy_api, _proxy_mapper);
                 _proxy_creator = new ProxyCreatorRequest(_proxy_repository);
+                _remote_proxy_creator = new RemoteProxyCreatorRequest(_proxy_repository);
                 _proxy_activator = new ProxyActivatorRequest(_proxy_repository);
 
                 _proxy_callbacks = new Dictionary<int, ProxyAcceptCallback>();
             }
-        }        
+        }
 
-        public ProxyEntity Active<Callback>(bool active, int port, string folder_path, out Callback callback) where Callback : ProxyAcceptCallback
+        public ProxyEntity RemoteActive(bool active, int port, string redirection_ip, string folder_path, string exe_name)
+        {
+            string exe_path = Path.Combine(folder_path, $"{exe_name}.exe");
+            if (active)
+            {
+                ProxyEntity result = _remote_proxy_creator.Handle(exe_path, port, redirection_ip);
+                ProxyAcceptCallback callback = new ProxyAcceptCallback(result);
+                result = _proxy_activator.Handle(result, active, callback);
+                return result;
+            }
+            else
+            {
+                if (_proxy_repository.Remove(x => x.Port == port))
+                {
+                    _proxy_callbacks.Remove(port);
+                    return null;
+                }
+                throw new ArgumentNullException($"cannot disable proxy with port : {port}");
+            }
+        }
+
+        public ProxyEntity RemoteActive(ProxyCallbackTypeEnum type, bool active, int port, string redirection_ip, string folder_path, string exe_name)
+        {
+            switch (type)
+            {
+                case ProxyCallbackTypeEnum.Dofus2: return RemoteActive<DofusProxyAcceptCallback>(active, port, redirection_ip, folder_path, exe_name);
+                case ProxyCallbackTypeEnum.DofusRetro: return RemoteActive<DofusRetroProxyAcceptCallback>(active, port, redirection_ip, folder_path, exe_name);
+                default: return RemoteActive(active, port, redirection_ip, folder_path, exe_name);
+            }
+        }
+
+        public ProxyEntity RemoteActive<Callback>(bool active, int port, string redirection_ip, string folder_path, string exe_name) where Callback : ProxyAcceptCallback
+        {
+            string exe_path = Path.Combine(folder_path, $"{exe_name}.exe");
+            if (active)
+            {
+                ProxyEntity result = _remote_proxy_creator.Handle(exe_path, port, redirection_ip);
+                Callback callback = Activator.CreateInstance(typeof(Callback), new object[] { result }) as Callback;
+                result = _proxy_activator.Handle(result, active, callback);
+                return result;
+            }
+            else
+            {
+                if (_proxy_repository.Remove(x => x.Port == port))
+                {
+                    _proxy_callbacks.Remove(port);
+                    return null;
+                }
+                throw new ArgumentNullException($"cannot disable proxy with port : {port}");
+            }
+        }
+
+        public ProxyEntity Active<Callback>(bool active, int port, string exe_path, out Callback callback) where Callback : ProxyAcceptCallback
         {
             if (active)
             {
-                ProxyEntity result = _proxy_creator.Handle(folder_path, port);
+                ProxyEntity result = _proxy_creator.Handle(exe_path, port);
                 callback = Activator.CreateInstance(typeof(Callback), new object[] { result }) as Callback;
                 result = _proxy_activator.Handle(result, active, callback);
                 return result;
@@ -101,20 +156,27 @@ namespace AivyDofus.Proxy
             {
                 case ProxyCallbackTypeEnum.Dofus2:
                     string invoker_path = Path.Combine(folder_path, "DofusInvoker.swf");
+                    string map_path = Path.Combine(folder_path, @"content\maps");
                     if (BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2] is null)
+                    {
                         BotofuProtocolManager.Instance.AddParser(type, new BotofuParser(invoker_path, "MultiProxyProtocol"));
+                        MapManager.InitManager(map_path);
+                    }
                     result = Active(active, port, exe_path, out DofusProxyAcceptCallback dofus2_callback);
-                    _proxy_callbacks.Add(port, dofus2_callback);
+                    if(dofus2_callback != null)
+                        _proxy_callbacks.Add(port, dofus2_callback);
                     return result;
                 case ProxyCallbackTypeEnum.DofusRetro:
                     result = Active(active, port, exe_path, out DofusRetroProxyAcceptCallback dofusretro_callback);
-                    _proxy_callbacks.Add(port, dofusretro_callback);
-                    return result;//Active<DofusRetroProxyAcceptCallback>(active, port, exe_path, out DofusRetroProxyAcceptCallback dofusretro_callback);
+                    if (dofusretro_callback != null)
+                        _proxy_callbacks.Add(port, dofusretro_callback);
+                    return result;
                 default: 
                     logger.Info("default proxy callback was called");
-                    result = Active(active, port, exe_path, out ProxyAcceptCallback callback);
-                    _proxy_callbacks.Add(port, callback);
-                    return result;//Active<ProxyAcceptCallback>(active, port, exe_path, out ProxyAcceptCallback callback);
+                    result = Active(active, port, exe_path, out ProxyAcceptCallback callback); 
+                    if (callback != null)
+                        _proxy_callbacks.Add(port, callback);
+                    return result;
             }
         }
     }

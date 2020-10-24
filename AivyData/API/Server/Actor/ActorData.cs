@@ -11,6 +11,5 @@ namespace AivyData.API.Server.Actor
         public EntityLookData Look { get; set; }
         public int ServerId { get; set; }
         public DateTime CreationDateTime { get; set; }
-
     }
 }

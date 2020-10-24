@@ -116,6 +116,11 @@ namespace AivyDofus.IO
 
         #region Public Method
 
+        public void SetPosition(int position)
+        {
+            BaseStream.Position = position;
+        }
+
         public int ReadVarInt()
         {
             int value = 0;

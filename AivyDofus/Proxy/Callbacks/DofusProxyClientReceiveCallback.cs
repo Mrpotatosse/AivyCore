@@ -44,11 +44,11 @@ namespace AivyDofus.Proxy.Callbacks
                                                ClientRepository repository,
                                                ClientCreatorRequest creator,
                                                ClientLinkerRequest linker,
-                                               ClientConnectorRequest connector, 
-                                               ClientDisconnectorRequest disconnector, 
+                                               ClientConnectorRequest connector,
+                                               ClientDisconnectorRequest disconnector,
                                                ClientSenderRequest sender,
                                                ProxyEntity proxy, ProxyTagEnum tag = ProxyTagEnum.UNKNOW)
-            : base(client, remote, repository,creator, linker, connector, disconnector, sender, tag)
+            : base(client, remote, repository, creator, linker, connector, disconnector, sender, tag)
         {
             if (tag is ProxyTagEnum.UNKNOW) throw new ArgumentNullException(nameof(tag));
 
@@ -83,114 +83,121 @@ namespace AivyDofus.Proxy.Callbacks
         /// thx to Hitman for this implementation made by ToOnS
         /// </summary>
         /// <param name="stream"></param>
+        private readonly object _rcv_locker = new object();
         protected virtual void OnReceive(MemoryStream stream)
         {
-            if (_reader is null) _reader = new BigEndianReader();
-            if (stream.Length > 0)
+            lock (_rcv_locker)
             {
-                _reader.Add(stream.ToArray(), 0, (int)stream.Length);
-            }
-
-            byte[] full_data = _reader.Data;
-            while (_position < full_data.Length && full_data.Length - _position >= 2)
-            {
-                long start_pos = _position;
-                _current_header = (ushort)((full_data[_position] * 256) + full_data[_position + 1]);
-                _position += sizeof(ushort);
-
-                if(_tag == ProxyTagEnum.Client)
+                if (_reader is null) _reader = new BigEndianReader();
+                if (stream.Length > 0)
                 {
-                    _instance_id = (uint)((full_data[_position] * 256 * 256 * 256) + (full_data[_position + 1] * 256 * 256) + (full_data[_position + 2] * 256) + full_data[_position + 3]);
-                    _position += sizeof(uint);
+                    _reader.Add(stream.ToArray(), 0, (int)stream.Length);
                 }
 
-                //if (full_data.Length - _position < _static_header)
-                //    break;
-
-                switch (_static_header)
+                byte[] full_data = _reader.Data;
+                while (_position < full_data.Length && full_data.Length - _position >= 2)
                 {
-                    case 0: _length = 0; break;
-                    case 1: _length = full_data[_position]; break;
-                    case 2: _length = (ushort)((full_data[_position] * 256) + full_data[_position + 1]); break;
-                    case 3: _length = (full_data[_position] * 256 * 256) + (full_data[_position + 1] * 256) + full_data[_position + 2]; break;
-                }
-
-                _position += _static_header;
-
-                long _current_data_len = full_data.Length - _position;
-                if (_current_data_len >= _length)
-                {
-                    NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
-                    _data = new byte[_current_data_len];
+                    long start_pos = _position;
+                    _current_header = (ushort)((full_data[_position] * 256) + full_data[_position + 1]);
+                    _position += sizeof(ushort);
 
                     if (_tag == ProxyTagEnum.Client)
                     {
-                        // rmv element from not game socket
-                        if (_instance_id > _proxy.GLOBAL_INSTANCE_ID * 2)
-                        {
-                            _element = null;
-                        }
-                        else
-                        {
-                            _proxy.LAST_CLIENT_INSTANCE_ID = _instance_id.Value;
-                            _proxy.MESSAGE_RECEIVED_FROM_LAST = 0;
-                        }
-                    }
-                    else
-                    {
-                        if (_message_id == StaticValues.RAW_DATA_MSG_RCV_ID) // rdm
-                        {
-                            _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
-                        }
-                        _proxy.MESSAGE_RECEIVED_FROM_LAST++;
+                        _instance_id = (uint)((full_data[_position] * 256 * 256 * 256) + (full_data[_position + 1] * 256 * 256) + (full_data[_position + 2] * 256) + full_data[_position + 3]);
+                        _position += sizeof(uint);
                     }
 
-                    byte[] packet_data = new byte[(int)(_position - start_pos) + _length.Value];
-                    Array.Copy(full_data, start_pos, packet_data, 0, packet_data.Length);
-                    Array.Copy(full_data, _position, _data, 0, _length.Value);
-
-                    if (_element != null)
+                    if (full_data.Length - _position < _static_header)
                     {
-                        logger.Info($"[{_tag}] {_element.BasicString} n°{_proxy.GLOBAL_INSTANCE_ID}");
-                        _data_buffer_reader = new MessageDataBufferReader(_element);
+                        _position = start_pos;
+                        break;
+                    }
 
-                        using (BigEndianReader big_data_reader = new BigEndianReader(_data))
+                    switch (_static_header)
+                    {
+                        case 0: _length = 0; break;
+                        case 1: _length = full_data[_position]; break;
+                        case 2: _length = (ushort)((full_data[_position] * 256) + full_data[_position + 1]); break;
+                        case 3: _length = (full_data[_position] * 256 * 256) + (full_data[_position + 1] * 256) + full_data[_position + 2]; break;
+                    }
+
+                    _position += _static_header;
+
+                    long _current_data_len = full_data.Length - _position;
+                    if (_current_data_len >= _length)
+                    {
+                        NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
+                        _data = new byte[_current_data_len];
+
+                        if (_tag == ProxyTagEnum.Client)
                         {
-                            if (_handler.Handle(this, _element, _data_buffer_reader.Parse(big_data_reader)).Result)
+                            // rmv element from not game socket
+                            if (_instance_id > _proxy.GLOBAL_INSTANCE_ID * 2)
                             {
-                                _client_sender.Handle(_remote, packet_data);
-
-                                logger.Info("=> forwarded");
+                                _element = null;
                             }
                             else
                             {
-                                logger.Info("=> not forwarded");
+                                _proxy.LAST_CLIENT_INSTANCE_ID = _instance_id.Value;
+                                _proxy.MESSAGE_RECEIVED_FROM_LAST = 0;
                             }
                         }
+                        else
+                        {
+                            if (_message_id == StaticValues.RAW_DATA_MSG_RCV_ID) // rdm
+                            {
+                                _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.name == "RawDataMessage"];
+                            }
+                            _proxy.MESSAGE_RECEIVED_FROM_LAST++;
+                        }
+
+                        byte[] packet_data = new byte[(int)(_position - start_pos) + _length.Value];
+                        Array.Copy(full_data, start_pos, packet_data, 0, packet_data.Length);
+                        Array.Copy(full_data, _position, _data, 0, _length.Value);
+
+                        if (_element != null)
+                        {
+                            logger.Info($"[{_tag}] {_element.BasicString} n°{_proxy.GLOBAL_INSTANCE_ID}");
+                            _data_buffer_reader = new MessageDataBufferReader(_element);
+
+                            using (BigEndianReader big_data_reader = new BigEndianReader(_data))
+                            {
+                                if (_handler.Handle(this, _element, _data_buffer_reader.Parse(big_data_reader)).Result)
+                                {
+                                    _client_sender.Handle(_remote, packet_data);
+
+                                    logger.Info("=> forwarded");
+                                }
+                                else
+                                {
+                                    logger.Info("=> not forwarded");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            _client_sender.Handle(_remote, packet_data);
+                        }
+
+                        _position += _length.Value;
+
+                        if (_current_data_len == _length)
+                        {
+                            _clear();
+
+                            _reader.Dispose();
+                            _reader = new BigEndianReader();
+                            _position = 0;
+                            break;
+                        }
+                        _clear();
                     }
                     else
                     {
-                        _client_sender.Handle(_remote, packet_data);
-                    }
-
-                    _position += _length.Value;
-
-                    if (_current_data_len == _length)
-                    {
-                        _clear();
-
-                        _reader.Dispose();
-                        _reader = new BigEndianReader();
-                        _position = 0;
+                        _position = start_pos;
                         break;
                     }
-                    _clear();
                 }
-                else
-                {
-                    _position = start_pos;
-                    break;
-                }                
             }
         }
     }

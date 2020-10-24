@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -17,6 +18,8 @@ namespace AivyDomain.Callback.Proxy
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        public readonly ProxyEntity _proxy;
+
         public ProxyClientReceiveCallback(ClientEntity client, 
                                           ClientEntity remote,
                                           ClientRepository repository,
@@ -25,10 +28,11 @@ namespace AivyDomain.Callback.Proxy
                                           ClientConnectorRequest connector,
                                           ClientDisconnectorRequest disconnector,
                                           ClientSenderRequest sender,
+                                          ProxyEntity proxy,
                                           ProxyTagEnum tag = ProxyTagEnum.UNKNOW)
             : base(client, remote, repository, creator, linker, connector, disconnector, sender, tag)
         {
-
+            _proxy = proxy ?? throw new ArgumentNullException(nameof(proxy));
         }
 
         protected override void _constructor_handled()

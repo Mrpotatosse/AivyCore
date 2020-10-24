@@ -9,6 +9,7 @@ namespace AivyData.Entities
     public class HookInterfaceEntity : HookInterface
     {
         public event Action<IPEndPoint, int, int> OnIpRedirected;
+        public event Func<string> IpGetterFunction;
 
         public override void Ping()
         {
@@ -24,6 +25,13 @@ namespace AivyData.Entities
         public override int[] LocalPortWhiteList()
         {
             return new int[] { 4444 };// for Dofus retro
+        }
+
+        public override string GetRedirectedIp()
+        {
+            if(IpGetterFunction is null)
+                return base.GetRedirectedIp();
+            return IpGetterFunction();
         }
     }
 }

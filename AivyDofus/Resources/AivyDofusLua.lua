@@ -2,8 +2,9 @@
 -- 	- multi_proxy : DofusMultiProxy
 -- 	- protocol_manager : BotofuProtocolManager
 --  - protocol_dofus2 : BotofuProtocol 
---	- handlers : LuaHandler
+--	- proxy_handlers : LuaHandler
 -- 	- sleeper : CodeSleep
+--  TODO
 
 -- proxy functions ---
 --
@@ -13,7 +14,12 @@ function default(port)
 end
 -- ProxyData * int -> ProxyEntity 																				-- start from ProxyData and port return ProxyEntity
 function start_proxy_from_config(config, port)
+	--if config.HookRedirectionIp ~= '127.0.0.1' then do return start_remote_proxy_from_config(config, port) end
 	return multi_proxy:Active(config.Type, true, port, config.FolderPath, config.ExeName)
+end
+
+function start_remote_proxy_from_config(config, port)
+	return multi_proxy:RemoteActive(config.Type, true, port, config.HookRedirectionIp, config.FolderPath, config.ExeName)
 end
 -- string -> ProxyData 																							-- start from string return ProxyData 
 -- read ProxyData from ./proxy_api_information.json  
@@ -70,9 +76,9 @@ function send_message(local_proxy, from_client, client, message, message_content
 	elseif message_content == nil then return false
 	else
 		local data = MessageDataBufferWriter(message):Parse(message_content)		
-		local final_data_reader = MessageBufferWriter(from_client):Build(message.protocolID, instance_id, data)
-		local final_data = final_data_reader.Data
-		final_data_reader:Dispose()
+		local final_data_writer = MessageBufferWriter(from_client):Build(message.protocolID, instance_id, data)
+		local final_data = final_data_writer.Data
+		final_data_writer:Dispose()
 		multi_proxy[local_proxy.Port]._client_sender:Handle(client, final_data)
 		return true
 	end
@@ -115,22 +121,25 @@ end
 
 
 -- general functions ---
--- double * FUNC -> ()																							-- wait double millisecondes then do FUNC
--- 
 -- for more information https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/LuaCode/CodeSleep.cs
+-- double * FUNC -> ()																							-- wait double millisecondes then do FUNC
 function sleep_then(value, on_end)
 	return sleeper:sleep_and_continue(value, on_end)
+end
+-- double * FUNC -> ()																							-- async wait double millisecondes then do FUNC
+function async_sleep_then(value, on_end)
+	return sleeper:async_sleep_and_continue(value, on_end)
 end
 --
 -- end general functions ---
 
 -- MAIN PROGRAM -- 
 -- set comment if you want to run different
-config = get_config('updated') -- get config
+config = get_config('remote_up') -- get config
 proxy = start_proxy_from_config(config, 666) -- start proxy
 accept_callback = multi_proxy[proxy.Port] -- get callback
-sleep_then(2000, update_dofus2_protocol) -- update dofus 2 protocol
+async_sleep_then(2000, update_dofus2_protocol) -- update dofus2 protocol
 -- END MAIN PROGRAM --
 
-
+print('default lua code inited')
 

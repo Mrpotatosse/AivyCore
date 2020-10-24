@@ -32,7 +32,7 @@ namespace AivyDofus.Protocol.Elements
             }
         }
 
-        BotofuProtocolManager()
+        private BotofuProtocolManager()
         {
             _parser = new Dictionary<ProxyCallbackTypeEnum, BotofuProtocol>();
         }

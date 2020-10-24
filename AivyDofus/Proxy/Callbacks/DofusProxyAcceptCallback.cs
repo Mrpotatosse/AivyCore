@@ -34,6 +34,8 @@ namespace AivyDofus.Proxy.Callbacks
                 ClientEntity client = _client_creator.Handle(_client_socket.RemoteEndPoint as IPEndPoint);
                 client = _client_linker.Handle(client, _client_socket);
 
+                logger.Info($"client available data : {client.Socket.Available}");
+
                 ClientEntity remote = _client_creator.Handle(_proxy.IpRedirectedStack.Dequeue());
                 remote = _client_linker.Handle(remote, new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
                 DofusProxyClientReceiveCallback remote_rcv_callback = new DofusProxyClientReceiveCallback(remote, client, _client_repository, _client_creator, _client_linker, _client_connector, _client_disconnector, _client_sender, _proxy, ProxyTagEnum.Server);

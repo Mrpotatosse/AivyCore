@@ -72,14 +72,14 @@ namespace SocketHook
                 return connect(socket, address, addrSize);
             }
 
-            _interface.Message($"Connection attempt at {ipAddress}:{htons(port)}, redirecting to 127.0.0.1:{_redirectionPort}...");
+            //_interface.Message($"Connection attempt at {ipAddress}:{htons(port)}, redirecting to 127.0.0.1:{_redirectionPort}...");
 
             _interface.IpRedirected(new IPEndPoint(ipAddress, htons(port)), Process.GetCurrentProcess().Id, _redirectionPort);
 
             var strucPtr = Marshal.AllocHGlobal(addrSize);
             var struc = new sockaddr_in
             {
-                sin_addr = { S_addr = inet_addr("127.0.0.1") },
+                sin_addr = { S_addr = inet_addr(_interface.GetRedirectedIp()) },
                 sin_port = htons(_redirectionPort),
                 sin_family = (short)AddressFamily.InterNetworkv4,
             };

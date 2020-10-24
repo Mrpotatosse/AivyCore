@@ -12,6 +12,7 @@ namespace AivyData.API
         public string FolderPath { get; set; }
         public string ExeName { get; set; }
         public ProxyCallbackTypeEnum Type { get; set; }
+        public string HookRedirectionIp { get; set; }
         //public ProxyCustomServerData[] custom_servers { get; set; }
     }
 }

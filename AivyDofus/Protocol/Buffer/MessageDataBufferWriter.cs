@@ -166,7 +166,11 @@ namespace AivyDofus.Protocol.Buffer
             {
                 typeof(BigEndianWriter).GetMethod(write_method).Invoke(writer, new object[] { value });
             }
-            catch (AmbiguousMatchException e)
+            catch (AmbiguousMatchException)
+            {
+                typeof(BigEndianWriter).GetMethods().FirstOrDefault(x => x.Name == write_method && x.GetParameters().FirstOrDefault(p => p.ParameterType == typeof(int)) != null).Invoke(writer, new object[] { value is long ? Convert.ToInt32(value) : value });
+            }
+            catch
             {
                 typeof(BigEndianWriter).GetMethods().FirstOrDefault(x => x.Name == write_method && x.GetParameters().FirstOrDefault(p => p.ParameterType == typeof(int)) != null).Invoke(writer, new object[] { value is long ? Convert.ToInt32(value) : value });
             }

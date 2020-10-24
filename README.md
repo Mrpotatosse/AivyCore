@@ -220,7 +220,7 @@ function mon_handler(callback, element, content) -- création du handler
 	return true
 end
 
-handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers
+handler_id = handlers:Add('LeNomDuMessageAHandle', mon_handler) -- ajout du handler à la liste des handlers
 ```
 
 <h2> Dépendances </h2>

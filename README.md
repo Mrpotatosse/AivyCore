@@ -1,3 +1,5 @@
+<h3>JE VAIS REECRIRE TOUT LE README , C'EST UN PEU TROP BOURBIER.<h3>
+
 (Pour une explication du code , le principe de base reste le même que Botox https://cadernis.fr/index.php?threads/botox-mitm.2551/ )
 
 English README : https://github.com/Mrpotatosse/AivyCore/blob/master/README_EN.md
@@ -51,7 +53,9 @@ Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('empl
 
 <details>
 	<summary>Proxy Distant</summary>
-	
+	Pour lancer un proxy distant , vous aller devoir lancer - un proxy par défault depuis la machine distante (cf. REMOTE PROXY FOR ONLY FORWARD dans l'exemple de config)
+								- un proxy sur votre machine local dont HookRedirection sera l'ip de votre machine distante 
+	Les 2 proxys (local et distant) devront avoir le même port
 </details>
 
 

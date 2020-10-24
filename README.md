@@ -23,19 +23,22 @@ La configuration du proxy se trouve dans ./proxy_api_information.json (il sera c
     "Name": "updated",
     "FolderPath": "D:\\AppDofus",
     "ExeName": "Dofus",
-    "Type": 2
+    "Type": 2,
+    "HookRedirectionIp": "127.0.0.1"
   },  
   {
     "Name": "dofus retro",
     "FolderPath": "D:\\AppDofusRetro\\resources\\app\\retroclient",
     "ExeName": "Dofus",
-    "Type": 1
+    "Type": 1,
+    "HookRedirectionIp": "127.0.0.1"
   },  
   {
-    "Name": "no protocol reading",
-    "FolderPath": "D:\\AppDofus",
-    "ExeName": "Dofus",
-    "Type": 0
+    "Name": "REMOTE PROXY FOR ONLY FORWARD",
+    "FolderPath": "",
+    "ExeName": "",
+    "Type": 0,
+    "HookRedirectionIp": "127.0.0.1"
   }
 ]
 ```
@@ -45,6 +48,11 @@ bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satis
 par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité pour une compléxité beaucoup trop élevé )
 
 Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('emplacement de votre fichier') ``
+
+<detail>
+	<summary>Proxy Distant</summary>
+	
+</detail>
 
 
 Un exemple d'implémentation en c#

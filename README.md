@@ -1,4 +1,5 @@
-<h3>JE VAIS REECRIRE TOUT LE README , C'EST UN PEU TROP BOURBIER.</h3>
+<h3>JE VAIS REECRIRE TOUT LE README , C'EST POUR BIENTOT.</h3>
+<h3>I'LL REWRITE ENGLISH VERSION README , IT'S COMING SOON.</h3>
 
 (Pour une explication du code , le principe de base reste le même que Botox https://cadernis.fr/index.php?threads/botox-mitm.2551/ )
 

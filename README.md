@@ -54,10 +54,10 @@ Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('empl
 
 <details>
 	<summary>Proxy Distant</summary>
-	Pour lancer un proxy distant , vous aller devoir lancer - un proxy par défault depuis la machine distante (cf. REMOTE PROXY FOR ONLY FORWARD dans l'exemple de config)
-								- un proxy sur votre machine local dont HookRedirection sera l'ip de votre machine distante 
+	Pour lancer un proxy distant , vous aller devoir lancer
+		- un proxy par défault depuis la machine distante (cf. REMOTE PROXY FOR ONLY FORWARD dans l'exemple de config)
+		- un proxy sur votre machine local dont HookRedirection sera l'ip de votre machine distante 
 	Les 2 proxys (local et distant) devront avoir le même port
-
 	lua ```lua start_remote_proxy_from_config() ```
 	c# ```c# new DofusMultiProxy().RemoteActive() ```
 </details>

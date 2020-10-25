@@ -231,7 +231,8 @@ lua
 -- AbstractClientReceiveCallback * NetworkElement * NetworkContentElement -> bool
 -- return forwarding value (same as IsForwardingData on c# handler source code)
 function mon_handler(callback, element, content) -- création du handler
-	print('handle '..element.BasicString..' with lua')
+	print('handle '..element.BasicString..' with lua') -- affiche nom et id
+	print(message_content) -- affiche le contenu du message
 	return true
 end
 

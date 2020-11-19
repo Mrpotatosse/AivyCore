@@ -68,12 +68,17 @@ La configuration du proxy se trouve dans ./proxy_api_information.json (il sera c
 ]
 ```
 Name = nom de votre configuration
+
 FolderPath = Emplacement de votre Dossier App Dofus (celui qui contiendra l'éxécutable)
+
 ExeName = Nom de votre fichier éxécutable sans l'extension .exe
+
 Type = 0 -> sans type les packets seront directement transmis au serveur
        1 -> dofus retro ( pour l'instant il n'y a que les bases de l'implémentation)
        2 -> dofus 2.XX ( contient la (dé)sérialization des packets )
+       
 HookRedirectionIp = L'ip vers laquel sera transité tout les packets ( Laissez l'ip locale si vous ne voulez pas faire transitez les packets vers un autre serveur.
+
 ⚠ Surtout ne mettez pas les ips des serveurs de Dofus, ce n'est clairement pas l'intérêt de cette propriété ⚠ )
 
 Pour lancer un proxy distant, vous devrez lancer AivyDofus sur votre machine distante avec une config avec le type 0. Et sur votre machine locale, vous devrez lancer AivyDofus

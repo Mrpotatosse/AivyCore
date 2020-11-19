@@ -182,7 +182,10 @@ proxy = start_proxy_from_config(config, 666)
 
 <details>
 	<summary><i>Pourquoi il n'y a que très peu de choses qui sont affiché dans la console?</i></summary>
-Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire ```log``` dans la console.
+Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire
+	
+	``log``
+dans la console.
 </details>
 
 <details>

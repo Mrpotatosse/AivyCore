@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Proxy.Handlers.Customs.Choice
 {
-    //[ProxyHandler(ProtocolName = "CharactersListMessage")]
+    [ProxyHandler(ProtocolName = "CharactersListMessage")]
     public class CharactersListMessageHandler : AbstractMessageHandler
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -25,7 +25,8 @@ namespace AivyDofus.Proxy.Handlers.Customs.Choice
 
         public override void Handle()
         {
-
+            logger.Debug($"from c# message -> {_element.BasicString}");
+            logger.Debug($"from c# content -> {_content}");
         }
     }
 }

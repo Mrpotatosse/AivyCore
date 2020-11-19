@@ -24,6 +24,8 @@ namespace AivyDomain.UseCases.Proxy
 
         public HookEntity Handle(ProxyEntity request)
         {
+
+
             return _repository.ActionResult(x => x.Port == request.Port, x =>
             {
                 HookElement _hook = x.Hooker.Hook;

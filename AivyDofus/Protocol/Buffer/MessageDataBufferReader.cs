@@ -11,8 +11,14 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Protocol.Buffer
 {
-    public class MessageDataBufferReader
+    public class MessageDataBufferReader : IDisposable
     {
+        public void Dispose()
+        {
+            if (_network_content.fields != null)
+                _network_content.Dispose();
+        }
+
         private static bool _is_primitive(ClassField field)
         {
             return BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.MessagesAndTypes, x => x.name == field.type] is null;

@@ -64,6 +64,11 @@ namespace AivyDofus.Proxy.API
             {
                 return JsonConvert.DeserializeObject<List<ProxyData>>(File.ReadAllText(_location), new JsonSerializerSettings() { Formatting = Formatting.Indented });
             }
+            catch(FileNotFoundException)
+            {
+                logger.Info($"file : '{_location}' not found -> file creation");
+                return new List<ProxyData>();
+            }
             catch(Exception e)
             {
                 logger.Error(e);

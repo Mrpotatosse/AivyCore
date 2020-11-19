@@ -25,7 +25,11 @@ namespace AivyDofus.LuaCode
             if (_handlers.ContainsKey(protocol_name)) 
             {
                 foreach (Func<AbstractClientReceiveCallback, NetworkElement, NetworkContentElement, bool> action in _handlers[protocol_name])
-                    await AsyncExtension.ExecuteAsync(() => { result = result && action(callback, element, content); }, null, e => { logger.Error(e); });
+                    await AsyncExtension.ExecuteAsync(() =>
+                    {
+                        bool action_result = action(callback, element, content);
+                        result = result && action_result;
+                    }, null, e => { logger.Error(e); });
             }
 
             return result;

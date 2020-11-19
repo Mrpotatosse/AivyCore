@@ -42,7 +42,6 @@ namespace AivyDomain.UseCases.Proxy
                     return "127.0.0.1";
                 };
                 x.Hooker = _hook_creator.Handle(exePath, x);
-
                 return x;
             });
         }

@@ -3,6 +3,7 @@ using AivyDofus.IO;
 using AivyDofus.Protocol.Elements;
 using AivyDofus.Protocol.Elements.Fields;
 using NLog;
+using NLua;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,6 +89,7 @@ namespace AivyDofus.Protocol.Buffer
                 if (field.is_vector || field.type == "ByteArray")
                 {
                     dynamic array = _network_content[field.name];
+                    int len;
 
                     if (!field.constant_length.HasValue)
                     {
@@ -97,16 +99,37 @@ namespace AivyDofus.Protocol.Buffer
                             _write_value(write_length_method, 0, writer);
                             return;
                         }
-                        _write_value(write_length_method, array.Length, writer);
+
+                        if(array is LuaTable table)
+                        {
+                            len = table.Values.Count;                            
+                            _write_value(write_length_method, len, writer);
+                        }
+                        else
+                        {
+                            len = array.Length;
+                            _write_value(write_length_method, len, writer);
+                        }
+                    }
+                    else
+                    {
+                        len = field.constant_length.Value;
                     }
 
                     if (array is byte[] _byte_array)
                     {
                         _write_value("WriteBytes", _byte_array, writer);
                     }
+                    else if(array is LuaTable table)
+                    {
+                        foreach(var value in table.Values)
+                        {
+                            _parse_var_element(field, value, writer);
+                        }
+                    }
                     else
                     {
-                        for (int i = 0; i < array.Length; i++)
+                        for (int i = 0; i < len; i++)
                         {
                             _parse_var_element(field, array[i], writer);
                         }

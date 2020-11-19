@@ -1,6 +1,7 @@
 ﻿using AivyData.Entities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -10,11 +11,11 @@ namespace AivyDomain.Mappers.Client
     public class ClientEntityMapper : IMapper<Func<ClientEntity, bool>, ClientEntity>
     {
         private readonly object _locker = new object();
-        private readonly List<ClientEntity> _clients;
+        private readonly ObservableCollection<ClientEntity> _clients;//List<ClientEntity> _clients;
 
         public ClientEntityMapper()
         {
-            _clients = new List<ClientEntity>();
+            _clients = new ObservableCollection<ClientEntity>();
         }
 
         public ClientEntity MapFrom(Func<ClientEntity, bool> input)
@@ -37,7 +38,10 @@ namespace AivyDomain.Mappers.Client
 
         public bool Remove(Func<ClientEntity, bool> predicat)
         {
-            return _clients.Remove(_clients.FirstOrDefault(predicat));
+            lock (_locker)
+            {
+                return _clients.Remove(_clients.FirstOrDefault(predicat));
+            }
         }
     }
 }

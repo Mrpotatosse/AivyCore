@@ -2,6 +2,7 @@
 using AivyData.Entities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -11,11 +12,11 @@ namespace AivyDomain.Mappers.Proxy
 {
     public class ProxyEntityMapper : IMapper<Func<ProxyEntity, bool>, ProxyEntity>
     {
-        private readonly List<ProxyEntity> _proxys;
+        private readonly ObservableCollection<ProxyEntity> _proxys;
 
         public ProxyEntityMapper()
         {
-            _proxys = new List<ProxyEntity>();
+            _proxys = new ObservableCollection<ProxyEntity>();
         }
 
         public ProxyEntity MapFrom(Func<ProxyEntity, bool> input)

@@ -63,7 +63,6 @@ namespace AivyDofus.Handler
         public async Task<bool> Handle(AbstractClientReceiveCallback callback, NetworkElement element, NetworkContentElement content)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
-            logger.Info(element.BasicString);
 
             IEnumerable<Type> _handlers = _handlers_type.Where(x => x.GetCustomAttribute<Attribute>().BaseMessage.protocolID == element.protocolID);
             bool _all_true = true;

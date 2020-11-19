@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AivyDofus", "AivyDofus\Aivy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AivyDofusUI", "AivyDofusUI\AivyDofusUI.csproj", "{D9023AF2-F3D7-4B81-BAC1-05CBCFE45F18}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AivyDofusTest", "AivyDofusTest\AivyDofusTest.csproj", "{828DDA51-1E96-40C4-9294-EBE356D11DB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D9023AF2-F3D7-4B81-BAC1-05CBCFE45F18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9023AF2-F3D7-4B81-BAC1-05CBCFE45F18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9023AF2-F3D7-4B81-BAC1-05CBCFE45F18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{828DDA51-1E96-40C4-9294-EBE356D11DB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{828DDA51-1E96-40C4-9294-EBE356D11DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{828DDA51-1E96-40C4-9294-EBE356D11DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{828DDA51-1E96-40C4-9294-EBE356D11DB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

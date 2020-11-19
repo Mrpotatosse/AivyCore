@@ -157,22 +157,28 @@ namespace AivyDofus.Proxy.Callbacks
 
                         if (_element != null)
                         {
-                            logger.Info($"[{_tag}] {_element.BasicString} n°{_proxy.GLOBAL_INSTANCE_ID}");
-                            _data_buffer_reader = new MessageDataBufferReader(_element);
+                            logger.Info($"[{_tag}] {_element.BasicString} n-{_proxy.GLOBAL_INSTANCE_ID}");
+                            //_data_buffer_reader = new MessageDataBufferReader(_element);
 
-                            using (BigEndianReader big_data_reader = new BigEndianReader(_data))
+                            using(_data_buffer_reader = new MessageDataBufferReader(_element))
                             {
-                                if (_handler.Handle(this, _element, _data_buffer_reader.Parse(big_data_reader)).Result)
+                                using (BigEndianReader big_data_reader = new BigEndianReader(_data))
                                 {
-                                    _client_sender.Handle(_remote, packet_data);
+                                    using (NetworkContentElement data_content = _data_buffer_reader.Parse(big_data_reader))
+                                    {
+                                        if (_handler.Handle(this, _element, data_content).Result)
+                                        {
+                                            _client_sender.Handle(_remote, packet_data);
 
-                                    logger.Info("=> forwarded");
+                                            //logger.Info("=> forwarded");
+                                        }
+                                        else
+                                        {
+                                            //logger.Info("=> not forwarded");
+                                        }
+                                    }
                                 }
-                                else
-                                {
-                                    logger.Info("=> not forwarded");
-                                }
-                            }
+                            }                            
                         }
                         else
                         {

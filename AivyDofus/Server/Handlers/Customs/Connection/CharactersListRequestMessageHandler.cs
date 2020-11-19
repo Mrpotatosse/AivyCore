@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Server.Handlers.Customs.Connection
 {
-    [ServerHandler(ProtocolName = "CharactersListRequestMessage")]
+    //[ServerHandler(ProtocolName = "CharactersListRequestMessage")]
     public class CharactersListRequestMessageHandler : AbstractMessageHandler
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -48,13 +48,13 @@ namespace AivyDofus.Server.Handlers.Customs.Connection
 
         public override void Handle()
         {
-            DofusServerWorldClientReceiveCallback _world_callback = _casted_callback<DofusServerWorldClientReceiveCallback>();
+            /*DofusServerWorldClientReceiveCallback _world_callback = _casted_callback<DofusServerWorldClientReceiveCallback>();
             if (DofusServer._server_api.GetData(x => x.Port == _world_callback._server.Port) is ServerData server_data &&
                 DofusServer._server_api.GetData<PlayerData>(x => x.AccountToken == _world_callback._client.CurrentToken && x.ServerId == server_data.ServerId) is IEnumerable<PlayerData> players)
             {
                 NetworkContentElement characters_list_content = _characters_list_content(players, server_data);
                 Send(false, _callback._client, _characters_list_message, characters_list_content);
-            }
+            }*/
         }
 
         public override void Error(Exception e)

@@ -21,6 +21,10 @@ end
 function start_remote_proxy_from_config(config, port)
 	return multi_proxy:RemoteActive(config.Type, true, port, config.HookRedirectionIp, config.FolderPath, config.ExeName)
 end
+
+function start_server(port)
+	return dofus_server:Active(true, port) 
+end
 -- string -> ProxyData 																							-- start from string return ProxyData 
 -- read ProxyData from ./proxy_api_information.json  
 function get_config(name)
@@ -35,32 +39,34 @@ end
 
 -- string -> NetworkElement
 function get_message(name)
+	update_dofus2_protocol()
 	return protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == name end)
 end
 -- string -> NetworkElement
 function get_type(name)
+	update_dofus2_protocol()
 	return protocol_dofus2:Get(ProtocolKeyEnum.Types, function(el) return el.name == name end)	
 end
 
 -- () -> ClientEntity
 -- get remote ClientEntity from accept_callback where ClientEntity.IsGameClient 
-function get_main_remote()
-	return accept_callback:_main_remote_client()
-end
+--function get_main_remote()
+	--return accept_callback:_main_remote_client()
+--end
 -- () -> ClientEntity
 -- get local ClientEntity from accept_callback where ClientEntity.IsGameClient
-function get_main_local()
-	return accept_callback:_main_local_client()
-end
+--function get_main_local()
+	--return accept_callback:_main_local_client()
+--end
 
 -- ProxyEntity * ClientEntity * string -> bool
 -- send string (ASCII) message 
-function send_string_message(local_proxy, client, message)
-	if local_proxy == nil then return false
+function send_string_message(local_entity, client, message)
+	if local_entity == nil then return false
 	elseif client == nil then return false
 	elseif message == nil then return false
 	else		
-		multi_proxy[local_proxy.Port]._client_sender:Handle(client, message)
+		multi_proxy[local_entity.Port]._client_sender:Handle(client, message)
 		return true
 	end
 end
@@ -69,32 +75,43 @@ end
 -- send byte[] message
 -- parse content as byte[] with MessageDataBufferWriter
 -- then build header as byte[] and add content as byte[] with MessageBufferWriter
-function send_message(local_proxy, from_client, client, message, message_content, instance_id)
-	if local_proxy == nil then return false
+function send_message(local_entity, from_client, client, message, message_content, instance_id)
+	if local_entity == nil then return false
 	elseif client == nil then return false
 	elseif message == nil then return false
 	elseif message_content == nil then return false
 	else
-		local data = MessageDataBufferWriter(message):Parse(message_content)		
+		local data = MessageDataBufferWriter(message):Parse(message_content)	
 		local final_data_writer = MessageBufferWriter(from_client):Build(message.protocolID, instance_id, data)
 		local final_data = final_data_writer.Data
-		final_data_writer:Dispose()
-		multi_proxy[local_proxy.Port]._client_sender:Handle(client, final_data)
+		multi_proxy[local_entity.Port]._client_sender:Handle(client, final_data)
+		--final_data_writer:Dispose()
 		return true
 	end
 end
-
 -- game actions
 --
 -- ProxyEntity * ClientEntity * byte * string -> ()
 -- send chat message
 -- increase GLOBAL_INSTANCE_ID if success
-function send_chat(proxy, client, channel, content)
+function send_chat(proxy, client, channel, content) -- from client
 	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
 	local message = get_message('ChatClientMultiMessage') --protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
 	local message_content = NetworkContentElement()
 	message_content['channel'] = channel
 	message_content['content'] = content
+	
+	if send_message(proxy, true, client, message, message_content, instance_id) then 
+		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
+end
+
+function send_chat_with_object(proxy, client, channel, content, objects)
+	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
+	local message = get_message('ChatClientMultiWithObjectMessage') --protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
+	local message_content = NetworkContentElement()
+	message_content['channel'] = channel
+	message_content['content'] = content
+	message_content['objects'] = objects
 	
 	if send_message(proxy, true, client, message, message_content, instance_id) then 
 		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
@@ -111,6 +128,20 @@ function send_private_chat(proxy, client, receiver, content)
 	
 	if send_message(proxy, true, client, message, message_content, instance_id) then
 		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1 end
+end
+
+
+
+function send_private_chat_with_object(proxy, client, receiver, content, objects)
+	local instance_id = proxy.GLOBAL_INSTANCE_ID + 1
+	local message = get_message('ChatClientPrivateWithObjectMessage') --protocol_dofus2:Get(ProtocolKeyEnum.Messages, function(el) return el.name == 'ChatClientMultiMessage' end)
+	local message_content = NetworkContentElement()
+	message_content['receiver'] = receiver
+	message_content['content'] = content
+	message_content['objects'] = objects
+	
+	if send_message(proxy, true, client, message, message_content, instance_id) then 
+		proxy.GLOBAL_INSTANCE_ID = proxy.GLOBAL_INSTANCE_ID + 1	end	
 end
 --
 -- end game actions
@@ -135,10 +166,12 @@ end
 
 -- MAIN PROGRAM -- 
 -- set comment if you want to run different
-config = get_config('remote_up') -- get config
-proxy = start_proxy_from_config(config, 666) -- start proxy
-accept_callback = multi_proxy[proxy.Port] -- get callback
-async_sleep_then(2000, update_dofus2_protocol) -- update dofus2 protocol
+--config = get_config('updated') -- get config
+--proxy = start_proxy_from_config(config, 666) -- start proxy
+--accept_callback = multi_proxy[proxy.Port] -- get callback
+--async_sleep_then(2000, update_dofus2_protocol) -- update dofus2 protocol
+
+--server = dofus_server:Active(true, 667)
 -- END MAIN PROGRAM --
 
 print('default lua code inited')

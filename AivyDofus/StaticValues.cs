@@ -48,6 +48,14 @@ namespace AivyDofus
             }
         }
 
+        public static BreedObjectData get_breed(Func<BreedObjectData, bool> predicat)
+        {
+            lock (_locker_breed)
+            {
+                return BREEDS.FirstOrDefault(predicat);
+            }
+        }
+
         static readonly object _locker_head = new object();
         static HeadObjectData[] _heads = null;
         public static HeadObjectData[] HEADS
@@ -66,6 +74,14 @@ namespace AivyDofus
                 {
                     _heads = value;
                 }
+            }
+        }
+
+        public static HeadObjectData get_head(Func<HeadObjectData, bool> predicat) 
+        {
+            lock (_locker_head)
+            {
+                return HEADS.FirstOrDefault(predicat);
             }
         }
     }

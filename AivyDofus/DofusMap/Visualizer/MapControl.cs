@@ -56,7 +56,7 @@ namespace AivyDofus.DofusMap.Visualizer
                                    {CellState.RedPlacement, Color.Red},
                                    {CellState.Trigger, Color.Orange},
                                    {CellState.Road, Color.Green},
-                                    {CellState.Testing, Color.DarkGray }
+                                   {CellState.Testing, Color.DarkGray }
                                };
             SetCellNumber();
             BuildMap();
@@ -404,7 +404,9 @@ namespace AivyDofus.DofusMap.Visualizer
 
         public void Invalidate(IEnumerable<MapCell> cells)
         {
-            Invalidate(cells.Select(entry => entry.Rectangle).Aggregate(Rectangle.Union));
+            IEnumerable<Rectangle> rectangles = cells.Select(entry => entry.Rectangle);
+            if(rectangles.Count() > 0)
+                Invalidate(rectangles.Aggregate(Rectangle.Union));
         }
 
         public static bool PointInPoly(Point p, Point[] poly)

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AivyDofus.Server.Handlers.Customs.Connection
 {
-    [ServerHandler(ProtocolName = "ReloginTokenRequestMessage")]
+    //[ServerHandler(ProtocolName = "ReloginTokenRequestMessage")]
     public class ReloginTokenRequestMessageHandler : AbstractMessageHandler
     {
         public override bool IsForwardingData => true;

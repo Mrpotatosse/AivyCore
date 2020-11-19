@@ -1,268 +1,134 @@
-﻿using AivyData.Enums;
-using AivyDofus.DofusMap.Map;
-using NLog;
+﻿using AivyDofus.DofusMap.Map;
+using AivyDofus.Pathfinding.Positions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
 
 namespace AivyDofus.Pathfinding
 {
-    public class DofusPathCell
+    // com.ankamagames.dofus.types.entities
+    // com.ankamagames.atouin.utils.DataMapProvider
+    public class DofusPathfinder : IDisposable
     {
-        public short CellId { get; set; }
-        public Point Position => PathingUtils.CellIdToCoord(CellId);
+        static readonly uint HV_COST = 10;
+        static readonly uint DIAG_COST = 15;
+        static readonly uint HEURISTIC_COST = 10;
+        static readonly int INFINITE_COST = 99999999;
 
-        public bool IsPair => (CellId / 14) % 2 == 0;
+        private int[] _parentOfCell;
+        private double[] _costOfCell;
+        private double[] _openListWeights;
+        private bool[] _isCellClosed;
+        private bool[] _isEntityOnCell;
 
-        public DofusPathCell EAST => new DofusPathCell() { CellId = (short)(CellId + 1) };
-        public DofusPathCell SOUTH => new DofusPathCell() { CellId = (short)(CellId + 28) };
-        public DofusPathCell WEST => new DofusPathCell() { CellId = (short)(CellId - 1) };
-        public DofusPathCell NORTH => new DofusPathCell() { CellId = (short)(CellId - 28) };
+        private List<int> _openList { get; set; } 
 
-        public DofusPathCell NORTH_EAST => IsPair ? new DofusPathCell() { CellId = (short)(CellId - 14) } : new DofusPathCell() { CellId = (short)(CellId - 13) };
-        public DofusPathCell SOUTH_WEST => IsPair ? new DofusPathCell() { CellId = (short)(CellId + 13) } : new DofusPathCell() { CellId = (short)(CellId + 14) };
+        private readonly GameMapData MapData;
+        private readonly Map Map;
 
-        public Dictionary<DirectionsEnum, DofusPathCell> Adjacents
+        private readonly bool _allowTroughEntity;
+        private readonly bool _allowDiagonal;
+        private readonly bool _avoidObstacle;
+
+        private readonly bool _isInFight;
+
+        public void Dispose()
         {
-            get
-            {
-                Dictionary<DirectionsEnum, DofusPathCell> result = new Dictionary<DirectionsEnum, DofusPathCell>()
-                {
-                    [DirectionsEnum.DIRECTION_EAST] = EAST,
-                    [DirectionsEnum.DIRECTION_SOUTH] = SOUTH,
-                    [DirectionsEnum.DIRECTION_WEST] = WEST,
-                    [DirectionsEnum.DIRECTION_NORTH] = NORTH,
-                    [DirectionsEnum.DIRECTION_NORTH_EAST] = NORTH_EAST,
-                    [DirectionsEnum.DIRECTION_SOUTH_WEST] = SOUTH_WEST,
-                    [DirectionsEnum.DIRECTION_NORTH_WEST] = WEST.NORTH_EAST,
-                    [DirectionsEnum.DIRECTION_SOUTH_EAST] = EAST.SOUTH_WEST
-                };
-
-                return result;
-            }
-        }
-        public Dictionary<DirectionsEnum, DofusPathCell> ValidAdjacents => Adjacents.Where(x => x.Value.IsValidCell).ToDictionary(k => k.Key, v => v.Value);
-        public long[] AdjacentsIds => Adjacents.Select(x => (long)x.Value.CellId).ToArray();
-        public bool IsValidCell => CellId >= 0 && CellId < 560 && Position.X >= 0 && Position.Y >= 0 && Position.X < 14 && Position.Y < 20;
-    }
-
-    public class DofusPathCellList : List<DofusPathCell>
-    {
-        public DofusPathCell First { get; set; }
-        public DofusPathCell Last { get; set; }
-    }
-
-    public class DofusPathfinder
-    {
-        static readonly double HEURISTIC_WEIGHT = 10.0d;
-        static readonly double DIAG_WEIGHT = 15.0d;
-
-        static readonly double INFINITE_COST = 999999999.0d;
-
-        public DofusPathfinder()
-        {
-
+            Map.Clear();
+            _parentOfCell = null;
+            _costOfCell = null;
+            _openListWeights = null;
+            _isCellClosed = null;
+            _isEntityOnCell = null;
+            _openList.Clear();
+            _openList = null;   
         }
 
-        public DofusPathCellList FindPath(GameMapInformations mapInformations, short start_cell, short end_cell)
+        public DofusPathfinder(GameMapData map_data, bool inFight = false, bool troughEntity = true, bool diagonal = true, bool obstacle = true)
         {
-            Map map = mapInformations.CurrentMap;
-            IEnumerable<int> occupied = mapInformations.Actors.Select(x => x.Key);
+            MapData = map_data;
+            Map = map_data.CurrentMap;
 
-            FastInArray _openList = new FastInArray(40);
-            bool[] _closed = new bool[map.CellsCount];
-            double[] _weight = new double[map.CellsCount];
+            _isInFight = inFight;
+            _allowTroughEntity = troughEntity;
+            _allowDiagonal = diagonal;
+            _avoidObstacle = obstacle;
 
-            _openList.clear();
-            for(int i = 0; i < map.CellsCount;i++)
-            {
-                _closed[i] = false;
-                _weight[i] = INFINITE_COST;
-            }
-            
-            _closed[start_cell] = true;
-            _weight[start_cell] = 1;
-            _openList.push(start_cell);
+            int cellsCount = Map.CellsCount;
+            _parentOfCell = new int[cellsCount];
+            _costOfCell = new double[cellsCount];
+            _openListWeights = new double[cellsCount];
+            _isCellClosed = new bool[cellsCount];
+            _isEntityOnCell = new bool[cellsCount];
 
-            DofusPathCellList result = new DofusPathCellList()
-            {
-                First = new DofusPathCell() { CellId = start_cell },
-                Last = new DofusPathCell() { CellId = end_cell }
-            };
-
-            DofusPathCell cursor = result.First;
-            while(_openList.length > 0 && !_closed[end_cell])
-            {
-                foreach(long adj in cursor.AdjacentsIds)
-                {
-                    if (!_closed[start_cell])
-                    {
-                        _closed[adj] = true;
-                        _openList.push((int)adj);
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public long[] Test(short start_cell, short end_cell)
-        {
-            return new DofusPathCell() { CellId = start_cell }.AdjacentsIds;
-        }
-    }
-
-    public class FastInArray
-    {
-        public int[] data { get; set; }
-        public int length { get; set; }
-
-        public FastInArray(int size = 0)
-        {
-            data = new int[size];
-            length = 0;
-        }
-
-        public int this[uint index]
-        {
-            get
-            {
-                return data[index];
-            }
-        }
-
-        public void push(int i)
-        {
-            if(data.Count() == length)
-            {
-                data = (data as IEnumerable<int>).Append(i).ToArray();
-            }
-            else
-            {
-                data[length] = i;
-            }
-            length++;
-        }
-
-        public int removeAt(uint index)
-        {
-            int previous = this[index];
-            data[index] = data[length - 1];
-            length--;
-            return previous;
-        }
-
-        public int indexOf(int val)
-        {
-            for (uint i = 0; i < length; i++)
-            {
-                if (this[i] == val) return (int)i;
-            }
-            return -1;
-        }
-
-        public void clear()
-        {
-            length = 0;
-        }
-    }
-
-    /*public class DofusPathfinder
-    {
-        private readonly int HV_COST = 10;
-        private readonly int DIAG_COST = 15;
-        private readonly int HEURISTIC_COST = 10;
-        private readonly int INFINITE_COST = 99999999;
-        private bool _isInit { get; set; } = false;
-        private int[] _parentOfCell { get; set; }
-        private double[] _costOfCell { get; set; }
-        private double[] _openListWeights { get; set; }
-        private bool[] _isCellClosed { get; set; }
-        private bool[] _isEntityOnCell { get; set; }
-        private FastInArray _openList { get; set; }
-
-        public DofusPathfinder()
-        {
-
-        }
-
-        public CellList FindPath(GameMapInformations mapInfo, short start, short end, bool diag = true, bool througEntity = true, bool avoidObstacle = true)
-        {
-            Map map = mapInfo.CurrentMap;
-            IEnumerable<int> actors = mapInfo.Actors.Select(actor => actor.Key);
-
-            uint i = 0;
-            double minimum;
-            uint smallestCostIndex = 0;
-            int parentId = 0;
-            int parentX = 0;
-            int parentY = 0;
-            int y = 0;
-            double cost;
-            int x = 0;
-            int cellId = 0;
-            double pointWeight;
-            int movementCost = 0;
-            int speed = 0;
-            bool cellOnEndColumn = false;
-            bool cellOnStartColumn = false;
-            bool cellOnEndLine = false;
-            bool cellOnStartLine = false;
-            uint distanceTmpToEnd = 0;
-            double heuristic;
-            int parent = 0;
-            int grandParent = 0;
-            int grandGrandParent = 0;
-            int kX = 0;
-            int kY = 0;
-            int nextX = 0;
-            int nextY = 0;
-            int interX = 0;
-            int interY = 0;
-            int endCellId = start;
-            int startCellId = end;
-            int endX = 0;
-            int endY = 0;
-            int endCellAuxId = startCellId;
-            uint distanceToEnd = PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)startCellId),
-                                                             PathingUtils.CellIdToCoord((short)endCellId));
-
-            if (!_isInit)
-            {
-                _costOfCell = new double[map.CellsCount];
-                _openListWeights = new double[map.CellsCount];
-                _parentOfCell = new int[map.CellsCount];
-                _isCellClosed = new bool[map.CellsCount];
-                _isEntityOnCell = new bool[map.CellsCount];
-                _openList = new FastInArray(40);
-                _isInit = true;
-            }
-
-            for(i = 0; i < map.CellsCount; i++)
+            for(int i = 0;i < cellsCount; i++)
             {
                 _parentOfCell[i] = -1;
+                _costOfCell[i] = -1;//
+                _openListWeights[i] = -1;//
                 _isCellClosed[i] = false;
-                _isEntityOnCell[i] = false;
+                _isEntityOnCell[i] = MapData.Actors.ContainsKey(i);// to do check with map_data
             }
 
-            _openList.clear();
-            foreach(var info in mapInfo.Actors)
-            {
-                _isEntityOnCell[info.Key] = info.Value.Count > 0;
-            }
-            _costOfCell[startCellId] = 0;
-            _openList.push(startCellId);
+            _openList = new List<int>(40);
+        }
 
-            while(_openList.length > 0 && _isCellClosed[endCellId] == false)
+        public MovementPath FindPath(int start, int end)
+        {
+            MapPoint start_point = new MapPoint(start);
+            MapPoint end_point = new MapPoint(end);
+
+            return FindPath(start_point, end_point);
+        }
+
+        public MovementPath FindPath(MapPoint start, MapPoint end)
+        {
+            int i;
+            int y;
+            int x;
+            
+            double minimum;
+            int smallestCostIndex;
+
+            double cost;
+
+            int parentId;
+            MapPoint parent;
+
+            MapPoint grandParent;
+            MapPoint grandGrandParent;
+
+            MapPoint cell;
+
+            double pointWeight;
+            int speed;
+            double movementCost;
+
+            bool cellOnEndColumn;
+            bool cellOnStartColumn;
+            bool cellOnEndLine;
+            bool cellOnStartLine;
+
+            int distanceTmpToEnd;
+            int distanceToEnd = start.DistanceToCell(end);
+
+            int endCellAuxId = start.CellId;
+            double heuristic;
+
+            MapPoint k;
+            MapPoint next;
+            MapPoint inter;
+
+            _costOfCell[start.CellId] = 0;
+            _openList.Add(start.CellId);
+
+            while(_openList.Count > 0 && !_isCellClosed[end.CellId])
             {
                 minimum = INFINITE_COST;
                 smallestCostIndex = 0;
-                for(i = 0; i < _openList.length; i++)
+                for(i = 0; i < _openList.Count; i++)
                 {
                     cost = _openListWeights[_openList[i]];
                     if(cost <= minimum)
@@ -271,39 +137,35 @@ namespace AivyDofus.Pathfinding
                         smallestCostIndex = i;
                     }
                 }
+
                 parentId = _openList[smallestCostIndex];
-                var point = PathingUtils.CellIdToCoord((short)parentId);
-                parentX = (int)point.X;
-                parentY = (int)point.Y;
-                _openList.removeAt(smallestCostIndex);
+                parent = new MapPoint(parentId);
+                _openList.RemoveAt(smallestCostIndex);
                 _isCellClosed[parentId] = true;
-                for(y = parentY - 1; y <= parentY + 1; y++)
+
+                for(y = parent.Y - 1; y <= parent.Y + 1; y++)
                 {
-                    for(x = parentX - 1; x <= parentX + 1; x++)
+                    for(x = parent.X - 1; x <= parent.X + 1; x++)
                     {
-                        cellId = PathingUtils.CoordToCellId(x, y);
-                        bool not_invalid = cellId != -1;
-                        bool not_closed = !_isCellClosed[cellId];
-                        bool not_parentId = cellId != parentId;
-                        bool is_free = pointMov(map, x, y, througEntity, parentId, endCellId, avoidObstacle, _isEntityOnCell);
-                        bool is_free_x_y = y == parentY 
-                                        || x == parentX
-                                        || (diag && (pointMov(map, parentX, y, througEntity, parentId, endCellId, avoidObstacle, _isEntityOnCell) 
-                                                  || pointMov(map, parentX, y, througEntity, parentId, endCellId, avoidObstacle, _isEntityOnCell)));
-                        
-                        if(not_invalid && not_closed && not_parentId && is_free && is_free_x_y)
+                        cell = new MapPoint(x, y);
+
+                        if(cell.IsInMap() && !_isCellClosed[cell.CellId] && cell.CellId != parentId 
+                        && _pointMov(new MapPoint(x,y), _allowTroughEntity, parentId, end.CellId, _avoidObstacle)
+                        && (y == parent.Y || x == parent.X || _allowDiagonal && 
+                            (_pointMov(new MapPoint(parent.X, y), _allowTroughEntity, parentId, end.CellId, _avoidObstacle) 
+                           || _pointMov(new MapPoint(x, parent.Y), _allowTroughEntity, parentId, end.CellId, _avoidObstacle))))
                         {
                             pointWeight = 0;
-                            if(cellId == endCellId)
+                            if(cell.CellId != end.CellId)
                             {
                                 pointWeight = 1;
                             }
                             else
                             {
-                                speed = map.Cells[cellId].speed;
-                                if (througEntity)
+                                speed = Map.Cells[cell.CellId].speed;
+                                if (_allowTroughEntity)
                                 {
-                                    if (_isEntityOnCell[cellId])
+                                    if (_isEntityOnCell[cell.CellId])
                                     {
                                         pointWeight = 20;
                                     }
@@ -319,82 +181,79 @@ namespace AivyDofus.Pathfinding
                                 else
                                 {
                                     pointWeight = 1;
-                                    if (_isEntityOnCell[cellId])
+                                    if (_isEntityOnCell[cell.CellId])
                                     {
-                                        pointWeight = pointWeight + 0.3d;
+                                        pointWeight += 0.3;
                                     }
-                                    if(isValidCoord(map, x + 1, y) && _isEntityOnCell[PathingUtils.CoordToCellId(x + 1, y)])
+                                    if(new MapPoint(x + 1, y) is MapPoint r && r.IsInMap() && _isEntityOnCell[r.CellId])
                                     {
-                                        pointWeight = pointWeight + 0.3d;
+                                        pointWeight += 0.3;
                                     }
-                                    if (isValidCoord(map, x, y + 1) && _isEntityOnCell[PathingUtils.CoordToCellId(x, y + 1)])
+                                    if (new MapPoint(x, y + 1) is MapPoint b && b.IsInMap() && _isEntityOnCell[b.CellId])
                                     {
-                                        pointWeight = pointWeight + 0.3d;
+                                        pointWeight += 0.3;
                                     }
-                                    if (isValidCoord(map, x - 1, y) && _isEntityOnCell[PathingUtils.CoordToCellId(x - 1, y)])
+                                    if (new MapPoint(x - 1, y) is MapPoint l && l.IsInMap() && _isEntityOnCell[l.CellId])
                                     {
-                                        pointWeight = pointWeight + 0.3d;
+                                        pointWeight += 0.3;
                                     }
-                                    if (isValidCoord(map, x, y - 1) && _isEntityOnCell[PathingUtils.CoordToCellId(x, y - 1)])
+                                    if (new MapPoint(x, y - 1) is MapPoint t && t.IsInMap() && _isEntityOnCell[t.CellId])
                                     {
-                                        pointWeight = pointWeight + 0.3d;
+                                        pointWeight += 0.3;
                                     }
-                                    if((pointSpecialEffects(map, x, y) & 2) == 2)
-                                    {
-                                        pointWeight = pointWeight + 0.2d;
-                                    }
+                                    // to do special effect
+                                    //if((specialEffect(cell.CellId) & 2) == 2)
+                                    //{
+                                    //  pointWeight += 0.2;
+                                    //}
                                 }
                             }
-
-                            movementCost = (int)(_costOfCell[parentId] + (y == parentY || x == parentX ? HV_COST : DIAG_COST) * pointWeight);
-                            if (througEntity)
+                            movementCost = _costOfCell[parentId] + (y == parent.Y || x == parent.X ? HV_COST : DIAG_COST) * pointWeight;
+                            if (_allowTroughEntity)
                             {
-                                cellOnEndColumn = x + y == endX + endY;
-                                cellOnStartColumn = PathingUtils.CellIdToCoord((short)startCellId) is Point _c && x + y == _c.X + _c.Y;
-                                cellOnEndLine = x - y == endX - endY;
-                                cellOnStartLine = PathingUtils.CellIdToCoord((short)endCellId) is Point _c2 && x - y == _c2.X - _c2.Y;
+                                cellOnEndColumn = x + y == end.X + end.Y;
+                                cellOnStartColumn = x + y == start.X + start.Y;
+                                cellOnEndLine = x - y == end.X - end.Y;
+                                cellOnStartLine = x - y == start.X - start.Y;
 
-                                if(!cellOnEndColumn && !cellOnEndLine || !cellOnStartColumn && !cellOnStartLine)
+                                if (!cellOnEndColumn && !cellOnEndLine || !cellOnStartColumn && !cellOnStartLine)
                                 {
-                                    movementCost = movementCost + (int)PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cellId), PathingUtils.CellIdToCoord((short)endCellId));
-                                    movementCost = movementCost + (int)PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cellId), PathingUtils.CellIdToCoord((short)startCellId));
+                                    movementCost += cell.DistanceToCell(end); //MapTools.getDistance(cellId, endCellId);
+                                    movementCost += cell.DistanceToCell(start); //movementCost += MapTools.getDistance(cellId, startCellId);
                                 }
-
-                                if(x == endX || y == endY)
+                                if (x == end.X || y == end.Y)
                                 {
-                                    movementCost = movementCost - 3;
+                                    movementCost -= 3;
                                 }
-                                if(cellOnEndColumn || cellOnEndLine || x + y == parentX + parentY || x - y == parentX - parentY)
+                                if (cellOnEndColumn || cellOnEndLine || x + y == parent.X + parent.Y || x - y == parent.X - parent.Y)
                                 {
-                                    movementCost = movementCost - 2;
+                                    movementCost -= 2;
                                 }
-
-                                if(PathingUtils.CellIdToCoord((short)startCellId) is Point _c3 && (i == _c3.X || y == _c3.Y))
+                                if (i == start.X || y == start.Y)
                                 {
-                                    movementCost = movementCost - 3;
+                                    movementCost -= 3;
                                 }
-
-                                if(cellOnStartColumn || cellOnStartLine)
+                                if (cellOnStartColumn || cellOnStartLine)
                                 {
-                                    movementCost = movementCost - 2;
+                                    movementCost -= 2;
                                 }
-
-                                distanceTmpToEnd = PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cellId), PathingUtils.CellIdToCoord((short)endCellId));
+                                distanceTmpToEnd = cell.DistanceToCell(end);
                                 if(distanceTmpToEnd < distanceToEnd)
                                 {
-                                    endCellAuxId = cellId;
+                                    endCellAuxId = cell.CellId;
                                     distanceToEnd = distanceTmpToEnd;
                                 }
                             }
-                            if(_parentOfCell[cellId] == -1 || movementCost < _costOfCell[cellId])
+                            if(_parentOfCell[cell.CellId] == -1 || movementCost < _costOfCell[cell.CellId])
                             {
-                                _parentOfCell[cellId] = parentId;
-                                _costOfCell[cellId] = movementCost;
-                                heuristic = HEURISTIC_COST * Math.Sqrt((endY - y) * (endY - y) + (endX - x) * (endX - x));
-                                _openListWeights[cellId] = heuristic + movementCost;
-                                if(_openList.indexOf(cellId) == -1)
+                                _parentOfCell[cell.CellId] = parentId;
+                                _costOfCell[cell.CellId] = movementCost;
+                                heuristic = HEURISTIC_COST * Math.Sqrt(((end.Y - y) * (end.Y - y)) + ((end.X - x) * (end.X - x)));
+                                _openListWeights[cell.CellId] = heuristic + movementCost;
+                            
+                                if(_openList.IndexOf(cell.CellId) == -1)
                                 {
-                                    _openList.push(cellId);
+                                    _openList.Add(cell.CellId);
                                 }
                             }
                         }
@@ -402,208 +261,220 @@ namespace AivyDofus.Pathfinding
                 }
             }
 
-            CellList result = new CellList();
-
-            CellData first = map.Cells[startCellId];
-            result.First = new Cell(first, first.mapChangeData != 0, first.mov, first.los, 0, 0, startCellId, PathingUtils.CellIdToCoord((short)startCellId));
-
-            if (_parentOfCell[endCellId] == -1)
+            MovementPath path = new MovementPath
             {
-                endCellId = endCellAuxId;
-                CellData last = map.Cells[endCellId];                
-                result.Last = new Cell(last, map.ArrowsCells.ContainsKey(endCellId), last.mov, last.los, 0, 0, endCellId, PathingUtils.CellIdToCoord((short)endCellId));
-            }
-            else
-            {
-                CellData last = map.Cells[endCellId];
-                result.Last = new Cell(last, last.mapChangeData != 0, last.mov, last.los, 0, 0, endCellId, PathingUtils.CellIdToCoord((short)endCellId));
-                //result.Last = end;
-            }
+                CellStart = start,
+                Cells = new List<PathElement>(),
+                CellEnd = _parentOfCell[end.CellId] == -1 ? new MapPoint(endCellAuxId) : end
+            };
 
-            for(int cursor = endCellId;cursor != startCellId; cursor = (int)_parentOfCell[cursor])
+            for(int cursor = path.CellEnd.CellId; cursor != start.CellId; cursor = _parentOfCell[cursor])
             {
-                if (diag)
+                if (_allowDiagonal)
                 {
-                    parent = _parentOfCell[cursor];
-                    grandParent = parent == -1 ? -1 : _parentOfCell[parent];
-                    grandGrandParent = grandParent == -1 ? -1 : _parentOfCell[grandParent];
-                    Point k = PathingUtils.CellIdToCoord((short)cursor);
-                    kX = (int)k.X;
-                    kY = (int)k.Y;
-                    if (grandParent != -1 && PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cursor), PathingUtils.CellIdToCoord((short)grandParent)) == 1)
+                    parent = new MapPoint(_parentOfCell[cursor]);
+                    grandParent = parent.CellId == -1 ? new MapPoint(-1) : new MapPoint(_parentOfCell[parent.CellId]);
+                    grandGrandParent = grandParent.CellId == -1 ? new MapPoint(-1) : new MapPoint(_parentOfCell[grandParent.CellId]);
+
+                    k = new MapPoint(cursor);
+                    if(grandParent.CellId != -1 && k.DistanceToCell(grandParent) == 1)
                     {
-                        if (pointMov(map, kX, kY, througEntity, grandParent, endCellId, true, _isEntityOnCell))
+                        if(_pointMov(k, _allowTroughEntity, grandParent.CellId, path.CellEnd.CellId, true))
                         {
-                            _parentOfCell[cursor] = grandParent;
+                            _parentOfCell[cursor] = grandParent.CellId;
                         }
                     }
-                    else if (grandGrandParent != -1 && PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cursor), PathingUtils.CellIdToCoord((short)grandGrandParent)) == 2)
+                    else if (grandGrandParent.CellId != -1 && k.DistanceToCell(grandGrandParent) == 2)
                     {
-                        Point next = PathingUtils.CellIdToCoord((short)grandGrandParent);
-                        nextX = (int)next.X;
-                        nextY = (int)next.Y;
-                        interX = kX + (int)((nextX - kX) / 2);
-                        interY = kY + (int)((nextY - kY) / 2);
-                        if(pointMov(map, interX, interY, througEntity, cursor, endCellId, true, _isEntityOnCell) && 
-                           fpointWeight(map, interX, interY, _isEntityOnCell) < 2)
+                        next = new MapPoint(grandGrandParent.CellId);
+                        inter = new MapPoint(k.X + ((next.X - k.X) / 2), k.Y + ((next.Y - k.Y) / 2));
+                        if(_pointMov(inter, _allowTroughEntity, cursor, path.CellEnd.CellId, true)
+                        && _pointWeight(inter) < 2)
                         {
-                            _parentOfCell[cursor] = PathingUtils.CoordToCellId(interX, interY);
+                            _parentOfCell[cursor] = inter.CellId;
                         }
                     }
-                    else if(grandParent != -1 && PathingUtils.DistanceToPoint(PathingUtils.CellIdToCoord((short)cursor), PathingUtils.CellIdToCoord((short)grandParent)) == 2)
+                    else if (grandParent.CellId != -1 && k.DistanceToCell(grandParent) == 2)
                     {
-                        Point next = PathingUtils.CellIdToCoord((short)grandParent);
-                        Point inter = PathingUtils.CellIdToCoord((short)parent);
-                        nextX = (int)next.X;
-                        nextY = (int)next.Y;
-                        interX = (int)inter.X;
-                        interY = (int)inter.Y;
-                        if(kX + kY == nextX + nextY && kX - kY != nextX - nextY
-                        && !isChangeZone(map, PathingUtils.CoordToCellId(kX, kY), PathingUtils.CoordToCellId(interX, interY))
-                        && !isChangeZone(map, PathingUtils.CoordToCellId(interX, interY), PathingUtils.CoordToCellId(nextX, nextY)))
+                        next = new MapPoint(grandParent.CellId);
+                        inter = new MapPoint(parent.CellId);
+
+                        if (k.X + k.Y == next.X + next.Y 
+                         && k.X - k.Y != inter.X - inter.Y 
+                         && !_isChangeZone(k, inter) //!map.isChangeZone(MapTools.getCellIdByCoord(kX, kY), MapTools.getCellIdByCoord(interX, interY)) 
+                         && !_isChangeZone(inter, next))//!map.isChangeZone(MapTools.getCellIdByCoord(interX, interY), MapTools.getCellIdByCoord(nextX, nextY)))
                         {
-                            _parentOfCell[cursor] = grandParent;
+                            _parentOfCell[cursor] = grandParent.CellId;
                         }
-                        else if (kX - kY == nextX + nextY && kX - kY != nextX - nextY
-                       && !isChangeZone(map, PathingUtils.CoordToCellId(kX, kY), PathingUtils.CoordToCellId(interX, interY))
-                       && !isChangeZone(map, PathingUtils.CoordToCellId(interX, interY), PathingUtils.CoordToCellId(nextX, nextY)))
+                        else if (k.X - k.Y == next.X - next.Y 
+                              && k.X - k.Y != inter.X - inter.Y 
+                              && !_isChangeZone(k, inter)//!map.isChangeZone(MapTools.getCellIdByCoord(kX, kY), MapTools.getCellIdByCoord(interX, interY))
+                              && !_isChangeZone(inter, next))//!map.isChangeZone(MapTools.getCellIdByCoord(interX, interY), MapTools.getCellIdByCoord(nextX, nextY)))
                         {
-                            _parentOfCell[cursor] = grandParent;
+                            _parentOfCell[cursor] = grandParent.CellId;
                         }
-                        else if (kX == nextX && kX != interX
-                       && fpointWeight(map, kX, interY, _isEntityOnCell) < 2
-                       && pointMov(map, kX, interY, througEntity, cursor, endCellId, true, _isEntityOnCell))
+                        else if (k.X == next.X 
+                              && k.X != inter.X
+                              && _pointWeight(new MapPoint(k.X, inter.Y)) < 2 && _pointMov(new MapPoint(k.X, inter.Y), _allowTroughEntity, cursor, path.CellEnd.CellId, true))// kX, interY, bAllowTroughEntity, cursor, endCellId))
                         {
-                            _parentOfCell[cursor] = PathingUtils.CoordToCellId(kX, interY);
+                            _parentOfCell[cursor] = new MapPoint(k.X, inter.Y).CellId;//MapTools.getCellIdByCoord(kX, interY);
                         }
-                        else if (kY == nextY && kX != interX
-                       && fpointWeight(map, interX, kY, _isEntityOnCell) < 2
-                       && pointMov(map, interX, kY, througEntity, cursor, endCellId, true, _isEntityOnCell))
+                        else if (k.Y == next.Y 
+                              && k.Y != inter.Y
+                              && _pointWeight(new MapPoint(inter.X, k.Y)) < 2 && _pointMov(new MapPoint(inter.X, k.Y), _allowTroughEntity, cursor, path.CellEnd.CellId, true))//interX, kY, bAllowTroughEntity, cursor, endCellId))
                         {
-                            _parentOfCell[cursor] = PathingUtils.CoordToCellId(interX, kY);
+                            _parentOfCell[cursor] = new MapPoint(inter.X, k.Y).CellId;//MapTools.getCellIdByCoord(interX, kY);
                         }
                     }
                 }
-                CellData _c4 = map.Cells[cursor];
-                result.Add(new Cell(_c4, false, _c4.mov, _c4.los, 0,0, cursor, PathingUtils.CellIdToCoord((short)cursor)));
+                MapPoint final = new MapPoint(_parentOfCell[cursor]);
+                path.Cells.Add(new PathElement() { Cell = final, Orientation = final.OrientationTo(new MapPoint(cursor))});
             }
-            result.Reverse();
-            return result;
+
+            path.Cells.Reverse();
+
+            return path;
         }
 
-        public static bool isChangeZone(Map map, int cell1, int cell2)
+        // to do
+        private bool _pointMov(MapPoint point, bool troughEntity, int parentId, int endCellId, bool avoidObstacle)
         {
-            CellData _cell1 = map.Cells[cell1];
-            CellData _cell2 = map.Cells[cell2];
-            int dif = Math.Abs(Math.Abs(_cell1.floor) - Math.Abs(_cell2.floor));
-            return _cell1.moveZone != _cell2.moveZone && dif == 0;
-        }
-
-        public static int pointSpecialEffects(Map map, int x,int y)
-        {
-            return 0;
-        }
-
-        public static bool isValidCoord(Map map, int x,int y)
-        {
-            return x >= 0 && y >= 0 && x <= 13 && y <= 19;
-            ///return PathingUtils.CoordToCellId(x, y) is short cell && cell >= 0 && cell < 560;
-        }
-
-        public static bool pointMov(Map map, int x,int y, bool throughEntity, int parentId, int endCellId, bool avoidObstacle, bool[] occupiedCells)
-        {
-            bool useNewSystem = false;
-            int cellId = 0;
+            bool useNewSystem;
+            int cellId;
             CellData cell;
-            bool mov = false;
-            CellData previous;
-            int dif = 0;
+            bool mov;
+            CellData parent;
+            int dif;
 
-            if(isValidCoord(map, x, y))
+            if (point.IsInMap())
             {
-                useNewSystem = map.IsUsingNewMovementSystem;
-                cellId = PathingUtils.CoordToCellId(x, y);
-                cell = map.Cells[cellId];
-                mov = cell.mov; // check in fight
-                if(mov && useNewSystem && parentId != -1 && parentId != cellId) // check updatedCell
+                useNewSystem = Map.IsUsingNewMovementSystem;
+                cellId = point.CellId;
+                cell = Map.Cells[cellId];
+                mov = cell.mov && (!_isInFight || !cell.nonWalkableDuringFight);
+
+                // check updatedCells
+                if(mov && useNewSystem && parentId != -1 && parentId != cellId)
                 {
-                    previous = map.Cells[parentId];
-                    dif = Math.Abs(Math.Abs(cell.floor) - Math.Abs(previous.floor));
-                    if(previous.moveZone != cell.moveZone && dif > 0 || previous.moveZone == cell.moveZone && cell.moveZone == 0 && dif > 11)
+                    parent = Map.Cells[parentId];
+                    dif = Math.Abs(Math.Abs(cell.floor) - Math.Abs(parent.floor));
+                    if (parent.moveZone != cell.moveZone && dif > 0 || parent.moveZone == cell.moveZone && cell.moveZone == 0 && dif > 11)
                     {
                         mov = false;
                     }
                 }
 
-                if (throughEntity)
+                if (!troughEntity)
                 {
-                    for(int i = 0; i < map.CellsCount; i++)
+                    if (_isEntityOnCell[cellId] && mov && endCellId != cellId && parentId != -1 && parentId != cellId)
                     {
-                        if (!map.Cells[i].mov) return false;
-                    }
-                }
+                        int dir = new MapPoint(parentId).OrientationTo(point);
+                                                                           
+                        /*int dir = new MapPoint(parentId).OrientationTo(point);
+                        if(dir % 2 == 0) // diag
+                        {
+                            // +1/+3 - +5/+7
+                            MapPoint l1 = point.GetNearestCellInDirection((dir + 1) % 8);
+                            MapPoint l2 = point.GetNearestCellInDirection((dir + 3) % 8);
 
-                if(avoidObstacle && cellId != endCellId)
-                {
-                    return false;
+                            MapPoint r1 = point.GetNearestCellInDirection((dir + 5) % 8);
+                            MapPoint r2 = point.GetNearestCellInDirection((dir + 7) % 8);
+
+                            if (_pointMov(l1, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[l1.CellId] &&
+                               _pointMov(l2, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[l2.CellId])
+                                mov = false;
+
+                            if (mov && _pointMov(r1, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[r1.CellId] &&
+                               _pointMov(r2, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[r2.CellId])
+                                mov = false;
+                        }
+                        else
+                        {
+                            MapPoint l = point.GetNearestCellInDirection((dir + 2) % 8);
+                            MapPoint r = point.GetNearestCellInDirection((dir + 6) % 8);
+
+                            if ((_pointMov(l, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[l.CellId]) ||
+                               (_pointMov(r, true, parentId, endCellId, avoidObstacle) && !_isEntityOnCell[r.CellId]))
+                                mov = false;
+                        }*/
+                    }
+                    // to do
+                    /*if (MapData.Actors.ContainsKey(cellId) 
+                     && cellId != endCellId
+                     && )
+                    {
+
+                    }*/
                 }
+            }
+            else
+            {
+                mov = false;
             }
 
             return mov;
         }
 
-        public static double fpointWeight(Map map, int x,int y, bool[] occupiedCell, bool throughEntity = true)
+        private double _pointWeight(MapPoint point, bool troughEntity = true)
         {
-            double weight = 1.0d;
+            int speed = Map.Cells[point.CellId].speed;
+            double weight = 1;
+            int cellId = point.CellId;
 
-            short cellId = PathingUtils.CoordToCellId(x, y);
-            int speed = map.Cells[cellId].speed;
-
-            if (throughEntity)
+            if (troughEntity)
             {
                 if(speed >= 0)
                 {
-                    weight = weight + (5.0d - speed);
+                    weight += 5 - speed;
                 }
                 else
                 {
-                    weight = weight + (11.0d + Math.Abs(speed));
+                    weight += 11 + Math.Abs(speed);
                 }
 
-                if (occupiedCell[cellId])
+                if (MapData.Actors.ContainsKey(point.CellId))
                 {
-                    weight = 20.0d;
+                    weight = 20;
                 }
             }
             else
             {
-                if (occupiedCell[cellId])
-                {
-                    weight = weight + 0.3d;
-                }
-                if (occupiedCell[PathingUtils.CoordToCellId(x + 1, y)])
-                {
-                    weight = weight + 0.3d;
-                }
-                if (occupiedCell[PathingUtils.CoordToCellId(x, y + 1)])
-                {
-                    weight = weight + 0.3d;
-                }
-                if (occupiedCell[PathingUtils.CoordToCellId(x - 1, y)])
-                {
-                    weight = weight + 0.3d;
-                }
-                if (occupiedCell[PathingUtils.CoordToCellId(x, y - 1)])
-                {
-                    weight = weight + 0.3d;
-                }
-                if (pointSpecialEffects(map, x, y) == 2)
-                {
-                    weight = weight + 0.2d;
-                }
+                if (_isEntityOnCell[cellId])//MapData.Actors.ContainsKey(cellId))//if (!MapData.NoEntitiesOnCell(cellId))
+                    weight += 0.3;
+
+                MapPoint adjCell = new MapPoint(point.X + 1, point.Y);
+                if (adjCell != null)// && !MapData.NoEntitiesOnCell(adjCell.CellId))
+                    if (_isEntityOnCell[adjCell.CellId])//MapData.Actors.ContainsKey(adjCell.CellId))
+                        weight += 0.3;
+
+                adjCell = new MapPoint(point.X, point.Y + 1);
+                if (adjCell != null)// && !MapData.NoEntitiesOnCell(adjCell.CellId))
+                    if (_isEntityOnCell[adjCell.CellId])//MapData.Actors.ContainsKey(adjCell.CellId))
+                        weight += 0.3;
+
+                adjCell = new MapPoint(point.X - 1, point.Y);
+                if (adjCell != null)// && !MapData.NoEntitiesOnCell(adjCell.CellId))
+                    if (_isEntityOnCell[adjCell.CellId]) //MapData.Actors.ContainsKey(adjCell.CellId))
+                        weight += 0.3;
+
+                adjCell = new MapPoint(point.X, point.Y - 1);
+                if (adjCell != null)// && !MapData.NoEntitiesOnCell(adjCell.CellId))
+                    if (_isEntityOnCell[adjCell.CellId]) //MapData.Actors.ContainsKey(adjCell.CellId))
+                        weight += 0.3;
+
+                // special effect
             }
 
             return weight;
         }
-    }*/
+
+        private bool _isChangeZone(MapPoint fCell, MapPoint sCell)
+        {
+            CellData f = Map.Cells[fCell.CellId];
+            CellData s = Map.Cells[sCell.CellId];
+
+            return f.moveZone != s.moveZone &&
+                  Math.Abs(f.floor) == Math.Abs(s.floor);
+        }
+    }
 }

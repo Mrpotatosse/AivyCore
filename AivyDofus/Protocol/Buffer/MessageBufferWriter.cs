@@ -82,14 +82,40 @@ namespace AivyDofus.Protocol.Buffer
         {
             try
             {
-                if (args[0] is long messageId
-                 && args[1] is long instanceId
-                 && args[2] is byte[] data)
+                if (ushort.TryParse(args[0].ToString(), out ushort id))
                 {
-                    return Build((ushort)messageId, (uint)instanceId, data);
+                    if(args[1] is null)
+                    {
+                        if(args[2] is byte[] a2)
+                        {
+                            return Build(id, null, a2);
+                        }
+                    }
+                    if(args[1] is byte[] a1)
+                    {
+                        return Build(id, null, a1);
+                    }
+                    else
+                    {
+                        if (uint.TryParse(args[1].ToString(), out uint iid))
+                        {
+                            if (args[2] is byte[] a2)
+                            {
+                                return Build(id, iid, a2);
+                            }
+                        }
+                    }                        
                 }
 
                 throw new ArgumentException();
+
+                /*if (ushort.TryParse(args[0].ToString(), out ushort messageId)                 
+                 && args[2] is byte[] data)
+                {
+                    return Build(messageId, (uint?)args[1], data);
+                }
+
+                throw new ArgumentException();*/
                 //return Build((ushort)messageId, (uint?)instanceId, data);
             }
             catch

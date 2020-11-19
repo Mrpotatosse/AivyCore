@@ -2,6 +2,7 @@
 using AivyDomain.API;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -10,11 +11,11 @@ namespace AivyDomain.Mappers.Server
 {
     public class ServerEntityMapper : IMapper<Func<ServerEntity, bool>, ServerEntity>
     {
-        private readonly List<ServerEntity> _servers;
+        private readonly ObservableCollection<ServerEntity> _servers;
 
         public ServerEntityMapper()
         {
-            _servers = new List<ServerEntity>();
+            _servers = new ObservableCollection<ServerEntity>();
         }
 
         public ServerEntity MapFrom(Func<ServerEntity, bool> input)

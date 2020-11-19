@@ -9,5 +9,9 @@ namespace AivyData.API.Server.Actor
         public string AccountToken { get; set; }
         public byte Breed { get; set; }
         public string Name { get; set; }
+
+        public byte DeathState { get; set; }
+        public int DeathCount { get; set; }
+        public short DeathMaxLevel { get; set; }
     }
 }

@@ -24,8 +24,8 @@ namespace AivyDofus.DofusMap.Map
         public bool farmCell { get; set; }
         public bool blue { get; set; }
         public bool red { get; set; }
-        public bool allowWalkRP { get; set; }
-        public bool allowWalkFight { get; set; }
+        public bool nonWalkableDuringRP { get; set; }
+        public bool nonWalkableDuringFight { get; set; }
         public bool havenBagCell { get; set; }
         public byte linkedZone { get; set; }
 
@@ -40,7 +40,7 @@ namespace AivyDofus.DofusMap.Map
 
         public bool HasLinkedZoneFight()
         {
-            return this.mov && this.allowWalkFight && !this.farmCell && !this.havenBagCell;
+            return this.mov && !this.nonWalkableDuringFight && !this.farmCell && !this.havenBagCell;
         }
 
         public bool HasLinkedZoneRP()
@@ -58,8 +58,8 @@ namespace AivyDofus.DofusMap.Map
                 {
                     short tmpbyte = raw.ReadShort();
                     mov = (tmpbyte & 0x1) == 0;
-                    allowWalkFight = (tmpbyte & 2) == 0;
-                    allowWalkRP = (tmpbyte & 4) == 0;
+                    nonWalkableDuringFight = (tmpbyte & 2) == 0;
+                    nonWalkableDuringRP = (tmpbyte & 4) == 0;
                     los = (tmpbyte & 8) == 0;
                     blue = (tmpbyte & 16) == 0;
                     red = (tmpbyte & 32) == 0;
@@ -100,8 +100,8 @@ namespace AivyDofus.DofusMap.Map
                     farmCell = (losmov & 32) >> 5 == 1;
                     blue = (losmov & 16) >> 4 == 1;
                     red = (losmov & 8) >> 3 == 1;
-                    allowWalkRP = (losmov & 128) >> 7 == 1;
-                    allowWalkFight = (losmov & 4) >> 2 == 1;
+                    nonWalkableDuringRP = (losmov & 128) >> 7 == 1;
+                    nonWalkableDuringFight = (losmov & 4) >> 2 == 1;
                 }
                 speed = raw.ReadByte();
                 mapChangeData = (uint)raw.ReadByte();

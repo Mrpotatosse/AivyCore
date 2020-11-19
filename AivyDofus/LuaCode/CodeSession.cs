@@ -16,6 +16,7 @@ namespace AivyDofus.LuaCode
 
         public CodeSession(params string[] importing)
         {
+            _lua.State.Encoding = Encoding.UTF8;
             _lua.LoadCLRPackage();
 
             foreach (string import in importing)
@@ -25,7 +26,7 @@ namespace AivyDofus.LuaCode
         public Exception ExecuteFile(string filename)
         {
             try
-            {
+            {   
                 _lua.DoFile(filename);
                 return null;
             }

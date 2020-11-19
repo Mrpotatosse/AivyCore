@@ -163,8 +163,8 @@ namespace AivyDofus.Proxy
                         MapManager.InitManager(map_path);
                     }
                     result = Active(active, port, exe_path, out DofusProxyAcceptCallback dofus2_callback);
-                    if(dofus2_callback != null)
-                        _proxy_callbacks.Add(port, dofus2_callback);
+                    if (dofus2_callback != null)
+                        _proxy_callbacks.Add(port, dofus2_callback);                    
                     return result;
                 case ProxyCallbackTypeEnum.DofusRetro:
                     result = Active(active, port, exe_path, out DofusRetroProxyAcceptCallback dofusretro_callback);

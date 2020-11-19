@@ -31,26 +31,13 @@ namespace AivyDofus.Protocol.Parser
             byte[] _byte_exe = Properties.Resources.botofu_protocol_parser;
             File.WriteAllBytes(_parser_executable_name, _byte_exe);
 
-            Process _parser_process = Process.Start(_parser_executable_name, $"{DofusInvokerPath} ./{_output_name}.json");
+            Process _parser_process = Process.Start(_parser_executable_name, $"--indent 1 {DofusInvokerPath} ./{_output_name}.json");
 
             _parser_process.EnableRaisingEvents = true;
             _parser_process.Exited += (sender, e) =>
             {
-                _writeIndented();
                 end_parse?.Invoke();
             };
-        }
-
-        private void _parser_process_Exited(object sender, EventArgs e)
-        {
-            _writeIndented();
-        }
-
-        private void _writeIndented()
-        {
-            string not_indented_content = File.ReadAllText(_output_path);
-            BotofuProtocol protocol = JsonConvert.DeserializeObject<BotofuProtocol>(not_indented_content);
-            File.WriteAllText(_output_path, JsonConvert.SerializeObject(protocol, Formatting.Indented));
         }
     }
 }

@@ -12,52 +12,76 @@ namespace AivyDofus.DofusMap.Visualizer
 {
     public class VisualizerManager : SafeSingelton
     {
-        static readonly VisualizerManager manager = new VisualizerManager();
-
-        public static void OpenUI()
+        public class VisualizerManagerInstance : VisualizerManager
         {
-            manager.SafeRun(() =>
+            public event Func<int, DofusMapVisualizer> VisualizerGetter;
+
+            public DofusMapVisualizer GetVisualizer(int port)
             {
-                manager.ShowUI(true);
-            });
-        }
-
-        public static void HideUI()
-        {
-            manager.SafeRun(() =>
-            {
-                manager.ShowUI(false);
-            });
-        }
-
-        public static DofusMapVisualizer Visualizer
-        {
-            get
-            {
-                DofusMapVisualizer result = null;
-
-                manager.SafeRun(() =>
-                {
-                    result = manager.window;
-                });
-
-                return result;
+                if (VisualizerGetter is null) return null;
+                return VisualizerGetter(port);
             }
         }
 
-        readonly DofusMapVisualizer window;// = new DofusMapVisualizer();
+        static readonly VisualizerManager manager = new VisualizerManager();
+
+        public static void OpenUI(int port)
+        {
+            manager.SafeRun(() =>
+            {
+                manager.ShowUI(port);
+            });
+        }
+
+        // for lua
+        public static VisualizerManagerInstance LuaInstance
+        {
+            get
+            {
+                VisualizerManagerInstance instance = new VisualizerManagerInstance();
+                instance.VisualizerGetter += Visualizer;
+
+                return instance;
+            }
+        }
+
+        public static DofusMapVisualizer Visualizer(int port)
+        {
+            DofusMapVisualizer result = null;
+
+            manager.SafeRun(() =>
+            {
+                result = manager[port];
+            });
+
+            return result;
+        }
+
+        readonly Dictionary<int, DofusMapVisualizer> windows;// = new DofusMapVisualizer();
 
         private VisualizerManager()
         {
-            window = new DofusMapVisualizer();
+            windows = new Dictionary<int, DofusMapVisualizer>();
         }
 
-        public async void ShowUI(bool show)
+        public DofusMapVisualizer this[int port]
         {
-            if (show)
-                await Task.Run(window.ShowDialog);
-            else
-                await Task.Run(window.Hide);
+            get
+            {
+                if (!windows.ContainsKey(port))
+                    windows.Add(port, new DofusMapVisualizer());
+                return windows[port];                
+            }
+        }
+
+        public async void ShowUI(int port)
+        {
+            if (!windows.ContainsKey(port))
+            {
+                windows.Add(port, new DofusMapVisualizer());
+            }
+            DofusMapVisualizer window = windows[port];
+            await Task.Run(window.ShowDialog);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AivyData.API;
+using AivyData.API.Server.Actor;
 using AivyDomain.API;
 using LiteDB;
 using NLog;
@@ -63,6 +64,16 @@ namespace AivyDofus.Server.API
             }
         }
 
+        public PlayerData[] GetPlayers(Func<PlayerData, bool> predicat)
+        {
+            return GetData(predicat).ToArray();
+        }
+
+        public PlayerData UpdatePlayer(PlayerData player)
+        {
+            return UpdateData(player);
+        }
+
         public ServerData GetData(Func<ServerData, bool> predicat)
         {
             if (predicat is null) throw new ArgumentNullException(nameof(predicat));
@@ -86,6 +97,17 @@ namespace AivyDofus.Server.API
                     servers.DeleteMany(x => x.ServerId == data.ServerId);
                 servers.Upsert(data);
                 return data;
+            }
+        }
+
+        public bool Remove(object data)
+        {
+            Type t = data.GetType();
+
+            using(LiteDatabase db = new LiteDatabase(_location))
+            {
+                ILiteCollection<object> datas = db.GetCollection<object>(t.Name);
+                return datas.DeleteMany(x => x == data) == 1;
             }
         }
     }

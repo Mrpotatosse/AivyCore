@@ -1,12 +1,10 @@
 ﻿using AivyDofus.DofusMap.Map;
-using AivyDofus.Pathfinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,12 +20,19 @@ namespace AivyDofus.DofusMap.Visualizer
             InitializeComponent();
         }
 
-        public void FromDofusMap(GameMapInformations informations)
+        public void Clear()
         {
-            Map.Map map = informations.CurrentMap;
+            int[] cells = new int[560];
+            for (int i = 0; i < cells.Length; i++)
+                cells[i] = i;
 
+            Draw(cells.ToDictionary(k => k, v => CellState.None));
+        }
+
+        public void FromMap(Map.Map map)
+        {
             Dictionary<int, CellState> dictionary = new Dictionary<int, CellState>();
-            for(int i = 0; i< map.CellsCount;i++)// CellData cell in map.Cells)
+            for (int i = 0; i < map.CellsCount; i++)// CellData cell in map.Cells)
             {
                 CellData cell = map.Cells[i];
 
@@ -39,106 +44,64 @@ namespace AivyDofus.DofusMap.Visualizer
             }
 
             Draw(dictionary);
+            map.Clear();
         }
 
-        public void ClearState()
-        {
-            List<MapCell> redraw = new List<MapCell>();
-            for(int i = 0;i<560;i++)
-            {
-                MapCell cell = Control.GetCell(i);
-                if(cell.State != CellState.None)
-                {
-                    cell.State = CellState.None;
-                    redraw.Add(cell);
-                }
-            }
-
-            Control.Invalidate(redraw);
-        }
-
-        public void Draw(int cellId, CellState state)
-        {
-            Draw(Control.GetCell(cellId), state);
-        }
-
-        public void Draw(MapCell cell, CellState state)
-        {
-            using(Graphics graphics = CreateGraphics())
-            {
-                cell.State = state;
-                cell.DrawBackground(Control, graphics, DrawMode.All);
-                Control.Invalidate(cell);
-            }
-        }        
-
-        public void Draw(Dictionary<int, CellState> dictionary)
+        public void FromPath(params int[] path)
         {
             List<MapCell> draw = new List<MapCell>();
-
-            foreach(var element in dictionary)
+            for (int i = 0; i < 560; i++)
             {
-                MapCell cell = Control.GetCell(element.Key);
-                cell.State = element.Value;
-                draw.Add(cell);
+                if (Control.GetCell(i) is MapCell cell)
+                {
+                    if (cell.State == CellState.Road && !path.Contains(cell.Id))
+                    {
+                        cell.State = CellState.Walkable;
+                        draw.Add(cell);
+                    }
+                    else if (cell.State == CellState.Walkable && path.Contains(cell.Id))
+                    {
+                        cell.State = CellState.Road;
+                        draw.Add(cell);
+                    }
+                }
             }
 
             Control.Invalidate(draw);
         }
 
-        public void DrawPath(params long[] path)
+        public void FromPath(params long[] path)
         {
-            DrawTest(CellState.Road, CellState.Walkable, path);
-            /*List<MapCell> draw = new List<MapCell>();
-
-            using(Graphics graphics = CreateGraphics())
+            List<MapCell> draw = new List<MapCell>();
+            for(int i = 0; i < 560; i++)
             {
-                for(long cellId = 0;cellId < 560; cellId++)
+                if(Control.GetCell(i) is MapCell cell)
                 {
-                    MapCell cell = Control.GetCell((int)cellId);
-
-                    if (path.Contains(cellId))
+                    if (cell.State == CellState.Road && !path.Contains(cell.Id))
                     {
-                        if (cell.State == CellState.Walkable)
-                            cell.State = CellState.Road;
+                        cell.State = CellState.Walkable;
+                        draw.Add(cell);
                     }
-                    else
+                    else if(cell.State == CellState.Walkable && path.Contains(cell.Id))
                     {
-                        if(cell.State == CellState.Road)
-                            cell.State = CellState.Walkable;
+                        cell.State = CellState.Road;
+                        draw.Add(cell);
                     }
-                    cell.DrawBackground(Control, graphics, DrawMode.All);
-                    draw.Add(cell);
                 }
             }
 
-            Control.Invalidate(draw);*/
+            Control.Invalidate(draw);
         }
 
-        public void DrawTest(CellState drawState, CellState onState, params long[] path)
+        public void Draw(Dictionary<int, CellState> dictionary)
         {
             List<MapCell> draw = new List<MapCell>();
 
-            using (Graphics graphics = CreateGraphics())
+            foreach (var element in dictionary)
             {
-                for (long cellId = 0; cellId < 560; cellId++)
-                {
-                    MapCell cell = Control.GetCell((int)cellId);
-
-                    if (path.Contains(cellId))
-                    {
-                        if (cell.State == onState)
-                            cell.State = drawState;
-                    }
-                    else
-                    {
-                        if (cell.State == drawState)
-                            cell.State = onState;
-                    }
-
-                    cell.DrawBackground(Control, graphics, DrawMode.All);
-                    draw.Add(cell);
-                }
+                MapCell cell = Control.GetCell(element.Key);
+                cell.State = element.Value;
+                draw.Add(cell);
             }
 
             Control.Invalidate(draw);

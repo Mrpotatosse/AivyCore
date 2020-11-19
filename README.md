@@ -5,8 +5,7 @@ L'intérêt de ce programme n'est pas de vous donnez une base sans même que vou
 
 <details>
 	<summary>Exemple de création d'un Proxy</summary>
-	```csharp
-	class Program
+	```csharp class Program
     	{
         	static OpenProxyApi _proxy_api; 
         	static ProxyEntityMapper _proxy_mapper;
@@ -26,9 +25,7 @@ L'intérêt de ce programme n'est pas de vous donnez une base sans même que vou
 		    proxy = _proxy_activator.Handle(proxy, true);
 		    Console.ReadLine();
         	}
-    	}
-	```
-</details>
+    	}```</details>
 
 <h3> Aivy Dofus </h3>
 

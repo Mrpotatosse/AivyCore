@@ -4,13 +4,12 @@ AivyCore est un program de networking assez basique, elle implémente un Client,
 L'intérêt de ce programme n'est pas de vous donnez une base sans même que vous compreniez le fonctionnement, donc, zé partie pour un peu de lecture ( Et lisez tout jusqu'à la fin, sinon si vous n'avez pas le temps ou l'envie, un simple coup d'oeil sur le code-source devrait faire l'affaire. )
 
 <details>
-	<summary>Exemple de création d'un Proxy</summary>
-	```csharp
+<summary>Exemple de création d'un Proxy</summary>
+```csharp
 class Program
 {
-
 }
-	```
+```
 </details>
 
 <h3> Aivy Dofus </h3>

@@ -39,7 +39,7 @@ class Program
 
 <h3> Aivy Dofus </h3>
 
-AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
+AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com ) ne nécéssitant AUCUNE modification de votre client.
 La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement lors du premier lancement MAIS VIDE !)
 
 <details>
@@ -66,14 +66,14 @@ HookRedirectionIp = L'ip vers laquel sera transité tout les packets ( Laissez l
 ⚠ Surtout ne mettez pas les ips des serveurs de Dofus, ce n'est clairement pas l'intérêt de cette propriété ⚠ )
 
 Pour lancer un proxy distant, vous devrez lancer AivyDofus sur votre machine distante avec une config avec le type 0. Et sur votre machine locale, vous devrez lancer AivyDofus
-avec comme ip, l'ip de votre machine distante.
+avec comme ip, l'ip de votre machine distante. AivyDofus devra être lancer sur le même port sur la machine distante et local.
 </details>
 
 <h3> Dofus 2 Handler </h3>
 
 Il vous est possible de 'handle' les messages Dofus avec du code C# et/ou Lua.
 Les handlers en C# nécessite une compilation pour pouvoir être ajouté.
-Les handlers en Lua peuvent être ajouter/modifier durant le runtime.
+Les handlers en Lua peuvent être ajouter/modifier durant le runtime directement depuis la console. 
 
 <details>
 	<summary>Exemple de Handler en C#</summary>
@@ -141,7 +141,7 @@ Les handlers en Lua peuvent être ajouter/modifier durant le runtime.
 
 
 <details>
-	<summary>Exemple de Handler en C#</summary>
+	<summary>Exemple de Handler en Lua</summary>
 
 ```lua
 -- no name restrictions
@@ -159,8 +159,38 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 ```
 </details>
 
-<h3> Lua </h3>
+<h3> FAQ </h3>
+<details>
+	<summary><h1>Comment lancer le proxy?</h1></summary>
+Vous devrez compilez le program, puis il suffit d'éxécuter du code Lua.
+Voici un exemple de comment lancer un proxy	
 
+```lua
+-- Pour éviter de trop écrire dans la console, je vous recommande d'utiliser dofile('emplacement de votre fichier lua')
+config = get_config('default') 
+proxy = start_proxy_from_config(config, 666)
+-- remote_proxy = start_remote_proxy_from_config(config, 666)
+```
+</details>
+
+<details>
+	<summary><h1>j'ai la flemme wlh</h2></summary>
+	='(
+</details>
+
+<h3> Dépendances </h3>
+
+- NLog
+
+- NewtonSoft Json
+
+- EasyHook ( SocketHook de Nameless https://cadernis.fr/index.php?threads/sockethook-injector-alternative-%C3%A0-no-ankama-dll.2221/page-2#post-24796 celui que j'utilise est une ancienne version auquel j'ai appliqué quelque modification )
+
+- Botofu parser ( https://gitlab.com/botofu/protocol_parser ) ( j'ai directement ajouter le .exe aux ressources ducoup le protocol devrait être parser à chaque ouverture du hook  https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Protocol/Parser/BotofuParser.cs )
+  
+- LiteDB (https://www.litedb.org/) ( pour la base de données côté serveur , c'est du NoSQL pour faciliter le stockage d'object ) ( vous pouvez le modifier et importer la base de données qui vous plait https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/API/OpenServerDatabaseApi.cs )
+
+- NLua (https://github.com/NLua/NLua) (pour éxécuter facilement des scripts Lua (alternatives Handler))
 
 <h3>JE VAIS REECRIRE TOUT LE README , C'EST POUR BIENTOT.</h3>
 <h3>I'LL REWRITE ENGLISH VERSION README , IT'S COMING SOON.</h3>

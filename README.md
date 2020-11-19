@@ -170,9 +170,7 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 <details>
 	<summary><i>Comment lancer le proxy?</i></summary>
 Vous devrez compilez le program et le lancer. Puis il suffit d'éxécuter du code Lua.
-Voici un exemple de comment lancer un proxy	
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/FNYT1cn1AmI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+Voici un exemple de comment lancer un proxy 
 
 ```lua
 -- Pour éviter de trop écrire dans la console, je vous recommande d'utiliser dofile('emplacement de votre fichier lua')
@@ -180,6 +178,7 @@ config = get_config('default')
 proxy = start_proxy_from_config(config, 666)
 -- remote_proxy = start_remote_proxy_from_config(config, 666)
 ```
+<a href="https://www.youtube.com/watch?v=FNYT1cn1AmI">Une petit vidéo youtube pour mieux illustrer</a>
 </details>
 
 <details>

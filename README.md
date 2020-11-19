@@ -5,7 +5,7 @@ L'intérêt de ce programme n'est pas de vous donnez une base sans même que vou
 
 <details>
 	<summary>Exemple de création d'un Proxy</summary>
-c#
+
 ```csharp
 class Program
 {

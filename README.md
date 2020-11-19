@@ -1,3 +1,6 @@
+<h3>JE VAIS REECRIRE TOUT LE README , C'EST POUR BIENTOT.</h3>
+<h3>I'LL REWRITE ENGLISH VERSION README , IT'S COMING SOON.</h3>
+
 (Pour une explication du code , le principe de base reste le même que Botox https://cadernis.fr/index.php?threads/botox-mitm.2551/ )
 
 English README : https://github.com/Mrpotatosse/AivyCore/blob/master/README_EN.md
@@ -23,19 +26,22 @@ La configuration du proxy se trouve dans ./proxy_api_information.json (il sera c
     "Name": "updated",
     "FolderPath": "D:\\AppDofus",
     "ExeName": "Dofus",
-    "Type": 2
+    "Type": 2,
+    "HookRedirectionIp": "127.0.0.1"
   },  
   {
     "Name": "dofus retro",
     "FolderPath": "D:\\AppDofusRetro\\resources\\app\\retroclient",
     "ExeName": "Dofus",
-    "Type": 1
+    "Type": 1,
+    "HookRedirectionIp": "127.0.0.1"
   },  
   {
-    "Name": "no protocol reading",
-    "FolderPath": "D:\\AppDofus",
-    "ExeName": "Dofus",
-    "Type": 0
+    "Name": "REMOTE PROXY FOR ONLY FORWARD",
+    "FolderPath": "",
+    "ExeName": "",
+    "Type": 0,
+    "HookRedirectionIp": "127.0.0.1"
   }
 ]
 ```
@@ -45,6 +51,15 @@ bot , les Handlers dans le code étant trop restrictifs. Les Handlers sont satis
 par exemple, mais pour des actions assez rapides dans le jeu ça reste tout de même assez limité pour une compléxité beaucoup trop élevé )
 
 Pour charger un fichier durant le runtime , utilisez la fonction `` dofile('emplacement de votre fichier') ``
+
+<details>
+	<summary>Proxy Distant</summary>
+	Pour lancer un proxy distant , vous aller devoir lancer un proxy par défault depuis la machine distante (cf. REMOTE PROXY FOR ONLY FORWARD dans l'exemple de config) et un proxy sur votre machine local dont HookRedirection sera l'ip de votre machine distante.
+	Les 2 proxys (local et distant) devront être lancer sur le même port
+	
+	lua : start_remote_proxy_from_config() 
+	c# : new DofusMultiProxy().RemoteActive() 
+</details>
 
 
 Un exemple d'implémentation en c#
@@ -216,7 +231,8 @@ lua
 -- AbstractClientReceiveCallback * NetworkElement * NetworkContentElement -> bool
 -- return forwarding value (same as IsForwardingData on c# handler source code)
 function mon_handler(callback, element, content) -- création du handler
-	print('handle '..element.BasicString..' with lua')
+	print('handle '..element.BasicString..' with lua') -- affiche nom et id
+	print(message_content) -- affiche le contenu du message
 	return true
 end
 

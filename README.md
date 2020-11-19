@@ -39,7 +39,125 @@ class Program
 
 <h3> Aivy Dofus </h3>
 
-<h3> Handler </h3>
+AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com )
+La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement lors du premier lancement MAIS VIDE !)
+
+<details>
+	<summary>Exemple de configuration</summary>
+	
+```json
+[
+	{
+	    "Name": "default",
+	    "FolderPath": "D:\\AppDofus",
+	    "ExeName": "Dofus",
+	    "Type": 2,
+	    "HookRedirectionIp": "127.0.0.1"
+	}
+]
+```
+Name = nom de votre configuration
+FolderPath = Emplacement de votre Dossier App Dofus (celui qui contiendra l'éxécutable)
+ExeName = Nom de votre fichier éxécutable sans l'extension .exe
+Type = 0 -> sans type les packets seront directement transmis au serveur
+       1 -> dofus retro ( pour l'instant il n'y a que les bases de l'implémentation)
+       2 -> dofus 2.XX ( contient la (dé)sérialization des packets )
+HookRedirectionIp = L'ip vers laquel sera transité tout les packets ( Laissez l'ip locale si vous ne voulez pas faire transitez les packets vers un autre serveur.
+⚠ Surtout ne mettez pas les ips des serveurs de Dofus, ce n'est clairement pas l'intérêt de cette propriété ⚠ )
+
+Pour lancer un proxy distant, vous devrez lancer AivyDofus sur votre machine distante avec une config avec le type 0. Et sur votre machine locale, vous devrez lancer AivyDofus
+avec comme ip, l'ip de votre machine distante.
+</details>
+
+<h3> Dofus 2 Handler </h3>
+
+Il vous est possible de 'handle' les messages Dofus avec du code C# et/ou Lua.
+Les handlers en C# nécessite une compilation pour pouvoir être ajouté.
+Les handlers en Lua peuvent être ajouter/modifier durant le runtime.
+
+<details>
+	<summary>Exemple de Handler en C#</summary>
+	
+```csharp
+// L'attribut doit être spécifié pour pouvoir handle le message , mettez l'attribut en commentaire si vous voulez désactivez le handle d'un message
+    // ProxyHandler pour les proxys et ServerHandler pour les servers
+    [ProxyHandler(ProtocolName = "ServerSelectionMessage")]
+    // Votre class Handler doit hérité de AbstractMessageHandler https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Handler/AbstractMessageHandler.cs
+    public class ServerSelectionMessageHandler : AbstractMessageHandler
+    {
+        // optionel pour le log
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
+        // obligatoire , cette variable ne sert que pour le proxy 
+        // à TRUE elle redirige directement les données reçu sans aucune modification ( du type du handler ici : ServerSelectionMessage )   
+        // à FALSE elle bloque tout les packets reçu ( du type du handler ici : ServerSelectionMessage ) et vous devrez envoyer un message manuellement
+        public override bool IsForwardingData => false;
+
+        // le constructeur doit avoir ses arguments la :
+        //  - AbstractClientReceiveCallback => _callback : contient
+        //             ._tag -> un énum qui définie si le message provient du Client ou du Server
+        //             ._client -> qui représente le client ayant activé le callback
+        //             ._remote -> le client en lien ( pour le server la valeur est null ) ( pour le proxy , si _tag = Client alors _remote = Server sinon l'inverse )
+        //             ._client_repository -> le stockage de tout les clients (à noté que vous pouvez éxécutez des actions depuis cette variable , mais il est préférable de les
+        // créer sous forme de class , comme ceux déjà créer , pour éviter tout conflit au niveau de la liste de client )
+        //             ._client_creator, ._client_linker, ._client_connector, ._client_disconnector -> differente class qui représente les actions possible sur un client
+        //  - NetworkElement => _element : la base du message ( ce qui contient toutes les informations de lecture/écriture )
+        //  - NetworkContentElement => _content : le contenu du message reçu
+        // Le constructeur ne peux pas être modifié ( sinon il y a aura une erreur lors du runtime )
+        public ServerSelectionMessageHandler(AbstractClientReceiveCallback callback,
+                                             NetworkElement element,
+                                             NetworkContentElement content)
+            : base(callback, element, content)
+        {
+
+        }
+        
+        // OBLIGATOIRE , la fonction qui permet de Handle un message
+        public override void Handle()
+        {
+            // Pour créer un message/type il faut passer par un NetworkContentElement
+            NetworkContentElement custom_message = new NetworkContentElement()
+            {
+                field = 
+                { "nomDeLaPropriété", null }, // valeur de la propriété
+                { "protocol_id" , 0 } // sur certain type , il peut être obligatoire ( dans le protocol c'est si prefixed_by_type_id = true ) 
+                // { ... }   
+            };
+        }
+        
+        // optionel
+        public override void EndHandle()
+        {
+        
+        }
+        // optionel
+        public override void Error(Exception e)
+        {
+            logger.Error(e);
+        }
+    }
+```
+</details>
+
+
+<details>
+	<summary>Exemple de Handler en C#</summary>
+
+```lua
+-- no name restrictions
+-- args restrictions
+function HANDLER(callback, message, message_content)
+	-- return true if message will be forwarded
+	-- return false if not
+	return true
+end
+
+-- check if handler already exist then remove exists
+if ID ~= nil then proxy_handlers:Remove('ServerSelectionMessage', ID) end
+-- adding handler
+proxy_handlers:Add('ServerSelectionMessage', HANDLER)
+```
+</details>
 
 <h3> Lua </h3>
 

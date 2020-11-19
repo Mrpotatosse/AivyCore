@@ -181,7 +181,7 @@ proxy = start_proxy_from_config(config, 666)
 
 <details>
 	<summary><i>j'ai la flemme wlh</i></summary>
-	='(
+	='( je rajouterai plus tard
 </details>
 
 <h3 align="center"> Dépendances </h3>

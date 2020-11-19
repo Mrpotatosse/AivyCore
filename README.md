@@ -80,6 +80,7 @@ avec comme ip, l'ip de votre machine distante. AivyDofus devra être lancer sur 
 Il vous est possible de 'handle' les messages Dofus avec du code C# et/ou Lua.
 Les handlers en C# nécessite une compilation pour pouvoir être ajouté.
 Les handlers en Lua peuvent être ajouter/modifier durant le runtime directement depuis la console. 
+Le protocol en JSON sera crée/mis à jour, lors de l'ouverture de votre premier proxy.
 
 <details>
 	<summary>Exemple de Handler en C#</summary>

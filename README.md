@@ -48,7 +48,9 @@ class Program
 <h3 align="center"> Aivy Dofus </h3>
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com ) ne nécéssitant AUCUNE modification de votre client.
-Pour la version compilé vous pouvez le trouver directement sur <a href="https://discord.gg/BrdNtjagf7">Discord</a>
+
+Pour la version compilé vous pouvez le trouver directement sur <a href="https://discord.gg/BrdNtjagf7">Discord</a>.
+
 La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement lors du premier lancement MAIS VIDE !)
 
 <details>

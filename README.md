@@ -41,7 +41,7 @@ class Program
 ```
 </details>
 
-<h3> Aivy Dofus </h3>
+<h3 align="center"> Aivy Dofus </h3>
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com ) ne nécéssitant AUCUNE modification de votre client.
 La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement lors du premier lancement MAIS VIDE !)
@@ -73,7 +73,7 @@ Pour lancer un proxy distant, vous devrez lancer AivyDofus sur votre machine dis
 avec comme ip, l'ip de votre machine distante. AivyDofus devra être lancer sur le même port sur la machine distante et local.
 </details>
 
-<h3> Dofus 2 Handler </h3>
+<h3 align="center"> Dofus 2 Handler </h3>
 
 Il vous est possible de 'handle' les messages Dofus avec du code C# et/ou Lua.
 Les handlers en C# nécessite une compilation pour pouvoir être ajouté.
@@ -163,7 +163,7 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 ```
 </details>
 
-<h3> FAQ </h3>
+<h3 align="center"> FAQ </h3>
 <details>
 	<summary><i>Comment lancer le proxy?</i></summary>
 Vous devrez compilez le program, puis il suffit d'éxécuter du code Lua.
@@ -182,7 +182,7 @@ proxy = start_proxy_from_config(config, 666)
 	='(
 </details>
 
-<h3> Dépendances </h3>
+<h3 align="center"> Dépendances </h3>
 
 - NLog
 

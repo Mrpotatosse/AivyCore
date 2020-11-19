@@ -169,7 +169,7 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 <h3 align="center"> FAQ </h3>
 <details>
 	<summary><i>Comment lancer le proxy?</i></summary>
-Vous devrez compilez le program, puis il suffit d'éxécuter du code Lua.
+Vous devrez compilez le program et le lancer. Puis il suffit d'éxécuter du code Lua.
 Voici un exemple de comment lancer un proxy	
 
 ```lua

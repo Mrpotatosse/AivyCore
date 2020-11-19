@@ -172,6 +172,8 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 Vous devrez compilez le program et le lancer. Puis il suffit d'éxécuter du code Lua.
 Voici un exemple de comment lancer un proxy	
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/FNYT1cn1AmI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ```lua
 -- Pour éviter de trop écrire dans la console, je vous recommande d'utiliser dofile('emplacement de votre fichier lua')
 config = get_config('default') 

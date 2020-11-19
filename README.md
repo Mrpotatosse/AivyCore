@@ -182,10 +182,14 @@ proxy = start_proxy_from_config(config, 666)
 
 <details>
 	<summary><i>Pourquoi il n'y a que très peu de choses qui sont affiché dans la console?</i></summary>
-Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire
-	
-	``log``
-dans la console.
+Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire 'log' dans la console.
+⚠ Seul le nom et l'id des messages seront affiché! ⚠ Pour afficher le contenu, vous avez le choix. Si vous voulez affiché le contenu d'un message spécifique, utilisez un
+handler. Sinon RDV dans la class https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/Callbacks/DofusProxyClientReceiveCallback.cs à la ligne 168 ajouter cette 
+ligne : 
+
+```csharp
+logger.Info($"{data_content}");
+```
 </details>
 
 <details>

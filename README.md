@@ -5,11 +5,12 @@ L'intérêt de ce programme n'est pas de vous donnez une base sans même que vou
 
 <details>
 	<summary>Exemple de création d'un Proxy</summary>
-<p>```csharp
+c#
+```csharp
 class Program
 {
 }
-```</p>	
+```
 </details>
 
 <h3> Aivy Dofus </h3>

@@ -6,7 +6,7 @@
 
 <h3 align="center"> Aivy Core </h3>
 
-AivyCore est un program de networking assez basique, elle implémente un Client, un Serveur, un Proxy.
+AivyCore est un program de networking assez basique, qui implémente un Client, un Serveur et un Proxy.
 L'intérêt de ce programme n'est pas de vous donnez une base sans même que vous compreniez le fonctionnement, donc, zé partie pour un peu de lecture ( Et lisez tout jusqu'à la fin, sinon si vous n'avez pas le temps ou l'envie, un simple coup d'oeil sur le code-source devrait faire l'affaire. )
 
 <details>

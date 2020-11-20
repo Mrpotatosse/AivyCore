@@ -48,16 +48,16 @@ function get_type(name)
 	return protocol_dofus2:Get(ProtocolKeyEnum.Types, function(el) return el.name == name end)	
 end
 
--- () -> ClientEntity
+-- ProxyEntity -> ClientEntity
 -- get remote ClientEntity from accept_callback where ClientEntity.IsGameClient 
---function get_main_remote()
-	--return accept_callback:_main_remote_client()
---end
--- () -> ClientEntity
+function get_main_remote(proxy)
+	return multi_proxy[proxy.Port]:_main_remote_client()
+end
+-- ProxyEntity -> ClientEntity
 -- get local ClientEntity from accept_callback where ClientEntity.IsGameClient
---function get_main_local()
-	--return accept_callback:_main_local_client()
---end
+function get_main_local(proxy)
+	return multi_proxy[proxy.Port]:_main_local_client()
+end
 
 -- ProxyEntity * ClientEntity * string -> bool
 -- send string (ASCII) message 

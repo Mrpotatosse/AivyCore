@@ -6,7 +6,7 @@
 
 <h3 align="center"> Aivy Core </h3>
 
-<p align="center">C'est gratuit et ça le sera toujours</p>
+<p align="center">C'est gratuit ( et ça le restera toujours )</p>
 
 AivyCore est un program de networking assez basique, qui implémente un Client, un Serveur et un Proxy. ( Seul Windows est supporté pour l'instant )
 

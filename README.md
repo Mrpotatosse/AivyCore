@@ -256,4 +256,4 @@ logger.Info($"{data_content}");
     |- Main.cs ( Pour faire des crêpes )
     |- NativeSocketsMethods.cs ( Fonctions natives de Windows )
 ```
-<details>
+</details>

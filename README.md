@@ -226,3 +226,34 @@ logger.Info($"{data_content}");
 - NLua (https://github.com/NLua/NLua) (pour éxécuter facilement des scripts Lua (alternatives Handler))
 
 (Pour une explication du code , le principe de base reste le même que Botox https://cadernis.fr/index.php?threads/botox-mitm.2551/ )
+
+<details>
+	<summary>Petite arborescence du projet ( pas encore fini mais je finirai ça en même temps que la FAQ askip )</summary>
+
+```
+|- AivyData
+    |- API
+    |- Entities
+    |- Enums
+|- AivyDofus
+    |- Proxy
+    |- Server
+    |- Protocol
+    |- IO
+    |- Handler
+    |- Ressources
+    |- ... ( Le reste dont l'explication ne sert pas à grand choses )
+|- AivyDomain
+    |- API
+    |- Callback
+    |- Mappers
+    |- Repository
+    |- UseCases
+|- SocketHook
+    |- HookManager.cs ( Sert à créer un hook element de façon générique  )
+    |- HookInterface.cs ( Interface pour pouvoir communiqué avec le hook )
+    |- HookElement.cs ( Le Hook )
+    |- Main.cs ( Pour faire des crêpes )
+    |- NativeSocketsMethods.cs ( Fonctions natives de Windows )
+```
+<details>

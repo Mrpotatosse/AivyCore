@@ -6,6 +6,8 @@
 
 <h3 align="center"> Aivy Core </h3>
 
+<p align="center">C'est gratuit et ça le sera toujours</p>
+
 AivyCore est un program de networking assez basique, qui implémente un Client, un Serveur et un Proxy.
 L'intérêt de ce programme n'est pas de vous donnez une base sans même que vous compreniez le fonctionnement, donc, zé partie pour un peu de lecture ( Et lisez tout jusqu'à la fin, sinon si vous n'avez pas le temps ou l'envie, un simple coup d'oeil sur le code-source devrait faire l'affaire. )
 
@@ -46,6 +48,9 @@ class Program
 <h3 align="center"> Aivy Dofus </h3>
 
 AivyDofus est une implémentation de AivyCore pour le jeu Dofus ( www.dofus.com ) ne nécéssitant AUCUNE modification de votre client.
+
+Pour la version compilé vous pouvez le trouver directement sur <a href="https://discord.gg/2eS8BYUEt4">Discord</a>.
+
 La configuration du proxy se trouve dans ./proxy_api_information.json (il sera crée automatiquement lors du premier lancement MAIS VIDE !)
 
 <details>
@@ -63,12 +68,17 @@ La configuration du proxy se trouve dans ./proxy_api_information.json (il sera c
 ]
 ```
 Name = nom de votre configuration
+
 FolderPath = Emplacement de votre Dossier App Dofus (celui qui contiendra l'éxécutable)
+
 ExeName = Nom de votre fichier éxécutable sans l'extension .exe
+
 Type = 0 -> sans type les packets seront directement transmis au serveur
        1 -> dofus retro ( pour l'instant il n'y a que les bases de l'implémentation)
        2 -> dofus 2.XX ( contient la (dé)sérialization des packets )
+       
 HookRedirectionIp = L'ip vers laquel sera transité tout les packets ( Laissez l'ip locale si vous ne voulez pas faire transitez les packets vers un autre serveur.
+
 ⚠ Surtout ne mettez pas les ips des serveurs de Dofus, ce n'est clairement pas l'intérêt de cette propriété ⚠ )
 
 Pour lancer un proxy distant, vous devrez lancer AivyDofus sur votre machine distante avec une config avec le type 0. Et sur votre machine locale, vous devrez lancer AivyDofus
@@ -170,7 +180,7 @@ proxy_handlers:Add('ServerSelectionMessage', HANDLER)
 <details>
 	<summary><i>Comment lancer le proxy?</i></summary>
 Vous devrez compilez le program et le lancer. Puis il suffit d'éxécuter du code Lua.
-Voici un exemple de comment lancer un proxy	
+Voici un exemple de comment lancer un proxy 
 
 ```lua
 -- Pour éviter de trop écrire dans la console, je vous recommande d'utiliser dofile('emplacement de votre fichier lua')
@@ -178,11 +188,13 @@ config = get_config('default')
 proxy = start_proxy_from_config(config, 666)
 -- remote_proxy = start_remote_proxy_from_config(config, 666)
 ```
+<a href="https://www.youtube.com/watch?v=FNYT1cn1AmI">Une petit vidéo youtube pour mieux illustrer</a>
 </details>
 
 <details>
 	<summary><i>Pourquoi il n'y a que très peu de choses qui sont affiché dans la console?</i></summary>
-Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire 'log' dans la console.
+Par default, les logs via NLog ne sont pas affiché, si vous voulez les affichés, il faudra écrire 'log' dans la console. Une fois les logs activé, il faudra redémarrer AivyCore 
+pour retirer l'affichages des logs. 
 	
 ⚠ Seul le nom et l'id des messages seront affiché! ⚠ Pour afficher le contenu, vous avez le choix. 
 Si vous voulez affiché le contenu d'un message spécifique, utilisez un handler. Sinon RDV dans la class https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Proxy/Callbacks/DofusProxyClientReceiveCallback.cs à la ligne 168 ajouter cette 

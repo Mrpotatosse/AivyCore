@@ -6,9 +6,10 @@
 
 <h3 align="center"> Aivy Core </h3>
 
-<p align="center">C'est gratuit et ça le sera toujours</p>
+<p align="center">C'est gratuit ( et ça le restera toujours )</p>
 
-AivyCore est un program de networking assez basique, qui implémente un Client, un Serveur et un Proxy.
+AivyCore est un program de networking assez basique, qui implémente un Client, un Serveur et un Proxy. ( Seul Windows est supporté pour l'instant )
+
 L'intérêt de ce programme n'est pas de vous donnez une base sans même que vous compreniez le fonctionnement, donc, zé partie pour un peu de lecture ( Et lisez tout jusqu'à la fin, sinon si vous n'avez pas le temps ou l'envie, un simple coup d'oeil sur le code-source devrait faire l'affaire. )
 
 <details>
@@ -222,6 +223,37 @@ logger.Info($"{data_content}");
   
 - LiteDB (https://www.litedb.org/) ( pour la base de données côté serveur , c'est du NoSQL pour faciliter le stockage d'object ) ( vous pouvez le modifier et importer la base de données qui vous plait https://github.com/Mrpotatosse/AivyCore/blob/master/AivyDofus/Server/API/OpenServerDatabaseApi.cs )
 
-- NLua (https://github.com/NLua/NLua) (pour éxécuter facilement des scripts Lua (alternatives Handler))
+- NLua (https://github.com/NLua/NLua) (pour éxécuter facilement des scripts Lua)
 
 (Pour une explication du code , le principe de base reste le même que Botox https://cadernis.fr/index.php?threads/botox-mitm.2551/ )
+
+<details>
+	<summary>Petite arborescence du projet ( pas encore fini mais je finirai ça en même temps que la FAQ askip )</summary>
+
+```
+|- AivyData
+    |- API
+    |- Entities
+    |- Enums
+|- AivyDofus
+    |- Proxy
+    |- Server
+    |- Protocol
+    |- IO
+    |- Handler
+    |- Ressources
+    |- ... ( Le reste dont l'explication ne sert pas à grand choses )
+|- AivyDomain
+    |- API
+    |- Callback
+    |- Mappers
+    |- Repository
+    |- UseCases
+|- SocketHook
+    |- HookManager.cs ( Sert à créer un hook element de façon générique  )
+    |- HookInterface.cs ( Interface pour pouvoir communiqué avec le hook )
+    |- HookElement.cs ( Le Hook )
+    |- Main.cs ( Pour faire des crêpes )
+    |- NativeSocketsMethods.cs ( Fonctions natives de Windows )
+```
+</details>

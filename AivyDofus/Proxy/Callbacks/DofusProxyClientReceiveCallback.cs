@@ -60,6 +60,7 @@ namespace AivyDofus.Proxy.Callbacks
             _handler = new MessageHandler<ProxyHandlerAttribute>();
 
             _rcv_action += OnReceive;
+            _position = 0;
         }
 
         private ushort? _current_header { get; set; } = null;
@@ -95,9 +96,12 @@ namespace AivyDofus.Proxy.Callbacks
                 }
 
                 byte[] full_data = _reader.Data;
-                while (_position < full_data.Length && full_data.Length - _position >= 2)
+                while(_position < full_data.Length)
                 {
+                    if (full_data.Length - _position < 2)
+                        break;
                     long start_pos = _position;
+
                     _current_header = (ushort)((full_data[_position] * 256) + full_data[_position + 1]);
                     _position += sizeof(ushort);
 
@@ -120,15 +124,18 @@ namespace AivyDofus.Proxy.Callbacks
                         case 2: _length = (ushort)((full_data[_position] * 256) + full_data[_position + 1]); break;
                         case 3: _length = (full_data[_position] * 256 * 256) + (full_data[_position + 1] * 256) + full_data[_position + 2]; break;
                     }
-
                     _position += _static_header;
 
-                    long _current_data_len = full_data.Length - _position;
-                    if (_current_data_len >= _length)
+                    _position += _length ?? 0;
+                    
+                    if (_position <= full_data.Length)
                     {
-                        NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
-                        _data = new byte[_current_data_len];
+                        byte[] game_packet = new byte[_position - start_pos];
+                        _data = new byte[_length ?? 0];
+                        Array.Copy(full_data, start_pos, game_packet, 0, game_packet.Length);
+                        Array.Copy(game_packet, game_packet.Length - (_length ?? 0), _data, 0, _data.Length);
 
+                        NetworkElement _element = BotofuProtocolManager.Instance[ProxyCallbackTypeEnum.Dofus2][ProtocolKeyEnum.Messages, x => x.protocolID == _message_id];
                         if (_tag == ProxyTagEnum.Client)
                         {
                             // rmv element from not game socket
@@ -151,16 +158,14 @@ namespace AivyDofus.Proxy.Callbacks
                             _proxy.MESSAGE_RECEIVED_FROM_LAST++;
                         }
 
-                        byte[] packet_data = new byte[(int)(_position - start_pos) + _length.Value];
-                        Array.Copy(full_data, start_pos, packet_data, 0, packet_data.Length);
-                        Array.Copy(full_data, _position, _data, 0, _length.Value);
-
-                        if (_element != null)
+                        if (_element is null)
                         {
-                            logger.Info($"[{_tag}] {_element.BasicString} n-{_proxy.GLOBAL_INSTANCE_ID}");
-                            //_data_buffer_reader = new MessageDataBufferReader(_element);
-
-                            using(_data_buffer_reader = new MessageDataBufferReader(_element))
+                            _client_sender.Handle(_remote, game_packet);
+                        }
+                        else
+                        {
+                            logger.Info($"[{_tag}] {_element.BasicString} - (c:{_proxy.GLOBAL_INSTANCE_ID}) (b_pos:{_position})");
+                            using (_data_buffer_reader = new MessageDataBufferReader(_element))
                             {
                                 using (BigEndianReader big_data_reader = new BigEndianReader(_data))
                                 {
@@ -168,39 +173,30 @@ namespace AivyDofus.Proxy.Callbacks
                                     {
                                         if (_handler.Handle(this, _element, data_content).Result)
                                         {
-                                            _client_sender.Handle(_remote, packet_data);
-
-                                            //logger.Info("=> forwarded");
+                                            _client_sender.Handle(_remote, game_packet);
                                         }
                                         else
                                         {
-                                            //logger.Info("=> not forwarded");
+                                            logger.Info($"{_element.BasicString} not forwarded");
                                         }
                                     }
                                 }
-                            }                            
+                            }
                         }
-                        else
+                        _clear();
+
+                        if(_position == full_data.Length)
                         {
-                            _client_sender.Handle(_remote, packet_data);
-                        }
-
-                        _position += _length.Value;
-
-                        if (_current_data_len == _length)
-                        {
-                            _clear();
-
                             _reader.Dispose();
                             _reader = new BigEndianReader();
                             _position = 0;
-                            break;
+                            break;// or reasign full_data
                         }
-                        _clear();
                     }
                     else
                     {
                         _position = start_pos;
+                        _clear();
                         break;
                     }
                 }

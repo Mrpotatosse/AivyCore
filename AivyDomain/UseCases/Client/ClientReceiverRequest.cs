@@ -26,6 +26,7 @@ namespace AivyDomain.UseCases.Client
                 if (request1 is null) throw new ArgumentNullException(nameof(request1));
                 if (request2 is null) throw new ArgumentNullException(nameof(request2));
 
+                
                 x.Socket.BeginReceive(request2._buffer, 0, request2._buffer.Length, SocketFlags.None, request2.Callback, x.Socket);
                 return x;
             });

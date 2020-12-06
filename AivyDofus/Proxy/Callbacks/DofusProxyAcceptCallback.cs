@@ -41,7 +41,7 @@ namespace AivyDofus.Proxy.Callbacks
                 DofusProxyClientReceiveCallback remote_rcv_callback = new DofusProxyClientReceiveCallback(remote, client, _client_repository, _client_creator, _client_linker, _client_connector, _client_disconnector, _client_sender, _proxy, ProxyTagEnum.Server);
                 remote = _client_connector.Handle(remote, new ClientConnectCallback(remote, remote_rcv_callback));
 
-                _proxy.AccountData.ConnectedToCustomServer = remote.IsRunning ? _proxy.AccountData.ConnectedToCustomServer : false;
+                _proxy.AccountData.ConnectedToCustomServer = remote.IsRunning && _proxy.AccountData.ConnectedToCustomServer;
 
                 if (client.IsRunning && remote.IsRunning)
                 {

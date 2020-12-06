@@ -67,15 +67,19 @@ namespace AivyDomain.Callback.Client
                 if (_rcv_len > 0)
                 {
                     if (_client.ReceiveBuffer != null) _client.ReceiveBuffer.Dispose();
-                    _client.ReceiveBuffer = new MemoryStream(_buffer, 0, _rcv_len);
+                    _client.ReceiveBuffer = new MemoryStream(_buffer, 0, _rcv_len); 
                 }
+                else
+                {
+                    _client.ReceiveBuffer = new MemoryStream();
+                }
+
+                _buffer = new byte[_client.ReceiveBufferLength];
 
                 if (errorCode == SocketError.Success && _client.IsRunning && _rcv_len > 0)
                 {
                     if (_client.ReceiveBuffer != null)
                         _rcv_action?.Invoke(_client.ReceiveBuffer);
-
-                    _buffer = new byte[_client.ReceiveBufferLength];
 
                     try
                     {
